@@ -25,12 +25,12 @@ async def cat(c, m: Message):
         cat_url = data[0]["url"]
         if cat_url.endswith(".gif"):
             await m.reply_animation(
-                cat_url, caption="✦ ᴛʜɪs ɪs ᴄᴀᴛ ᴘɪᴄᴛᴜʀᴇ ♥︎", reply_markup=close_keyboard
+                cat_url, caption="<b>● ᴛʜɪs ɪs ᴄᴀᴛ ᴘɪᴄᴛᴜʀᴇ ♡゙</b>", reply_markup=close_keyboard
             )
         else:
-            await m.reply_photo(cat_url, caption="✦ ᴛʜɪs ɪs ᴄᴀᴛ ᴘɪᴄᴛᴜʀᴇ ♥︎", reply_markup=close_keyboard)
+            await m.reply_photo(cat_url, caption="<b>● ᴛʜɪs ɪs ᴄᴀᴛ ᴘɪᴄᴛᴜʀᴇ ♡゙</b>", reply_markup=close_keyboard)
     else:
-        await m.reply_text("Failed to fetch cat picture 🙀")
+        await m.reply_text("Failed to fetch cat picture")
 
 
 @app.on_callback_query(filters.regex("refresh_cat") & ~BANNED_USERS)
@@ -41,12 +41,12 @@ async def refresh_cat(c, m: CallbackQuery):
         cat_url = data[0]["url"]
         if cat_url.endswith(".gif"):
             await m.edit_message_animation(
-                cat_url, caption="✦ ᴛʜɪs ɪs ᴄᴀᴛ ᴘɪᴄᴛᴜʀᴇ ♥︎", reply_markup=close_keyboard
+                cat_url, caption="<b>● ᴛʜɪs ɪs ᴄᴀᴛ ᴘɪᴄᴛᴜʀᴇ ♡゙</b>", reply_markup=close_keyboard
             )
         else:
             await m.edit_message_media(
-                InputMediaPhoto(media=cat_url, caption="✦ ᴛʜɪs ɪs ᴄᴀᴛ ᴘɪᴄᴛᴜʀᴇ ♥︎"),
+                InputMediaPhoto(media=cat_url, caption="<b>● ᴛʜɪs ɪs ᴄᴀᴛ ᴘɪᴄᴛᴜʀᴇ ♡゙</b>"),
                 reply_markup=close_keyboard,
             )
     else:
-        await m.edit_message_text("Failed to refresh cat picture 🙀")
+        await m.edit_message_text("Failed to refresh cat picture")
