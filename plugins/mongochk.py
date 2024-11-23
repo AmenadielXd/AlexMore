@@ -41,7 +41,7 @@ async def mongo_command(client, message: Message):
         user_last_message_time[user_id] = current_time
 
     if len(message.command) < 2:
-        await message.reply("Please enter your MongoDB URL after the command. Example: `/mongochk your_mongodb_url`")
+        await message.reply("<b>» ᴘʟᴇᴀsᴇ ᴇɴᴛᴇʀ ʏᴏᴜʀ ᴍᴏɴɢᴏᴅʙ ᴜʀʟ ᴀғᴛᴇʀ ᴛʜᴇ ᴄᴏᴍᴍᴀɴᴅ. ᴇxᴀᴍᴘʟᴇ:\n➥ <code>/mongochk <ʏᴏᴜʀ_ᴍᴏɴɢᴏᴅʙ_ᴜʀʟ></b>")
         return
 
     mongo_url = message.command[1]
