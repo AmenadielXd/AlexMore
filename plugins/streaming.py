@@ -30,7 +30,7 @@ async def brah3(app, message: Message):
              pass
 
 # Math command
-@app.on_message(filters.command("math", prefixes="/", "!", "."))
+@app.on_message(filters.command("math", prefixes=["/", "!", "."]))
 def calculate_math(client, message):   
     expression = message.text.split("/math ", 1)[1]
     try:        
