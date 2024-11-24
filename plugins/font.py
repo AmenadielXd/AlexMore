@@ -1,7 +1,7 @@
 from pyrogram import  filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from Alex.utils.lucy_font import Fonts
+from utils.lucy_font import Fonts
 from Alex import app
 
 
