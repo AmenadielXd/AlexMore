@@ -4,7 +4,7 @@ from pyrogram.types import Message
 from Alex import app
 from Alex.core.mongo import mongodb
 from Alex.utils.database import save_filter
-from Alex.utils.permissions import adminsOnly
+from utils.permissions import adminsOnly
 from config import BANNED_USERS
 
 # MongoDB collection
