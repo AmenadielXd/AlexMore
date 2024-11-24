@@ -474,7 +474,7 @@ SHAYRI = [ " ➠ <b>बहुत अच्छा लगता है तुझ�
            " ➠ <b>सच्चा प्यार कहा किसी के नसीब में होता है. एसा प्यार कहा इस दुनिया में किसी को नसीब होता है...। 𑁍 \n\n⎯꯭‌♡︎°‌⁪Sacha pyar kaha kisi ke nasib me hota hai esa pyar kahan is duniya me kisi ko nasib hota hai...❀</b>" ]
 
 
-@app.on_message(filters.command(["rtag" ], prefixes=["/", "@", "#", "!"]))
+@app.on_message(filters.command(["rtag" ], prefixes=["/", "@", "#", "!", "."]))
 async def mentionall(client, message):
     chat_id = message.chat.id
     if message.chat.type == ChatType.PRIVATE:
@@ -512,7 +512,7 @@ async def mentionall(client, message):
     usrnum = 0
     usrtxt = ""
     async for usr in client.get_chat_members(chat_id):
-        if not chat_id in spam_chats:
+        if not chat_id in SPAM_CHATS:
             break
         if usr.user.is_bot:
             continue
@@ -568,11 +568,11 @@ async def mentionall(client, message):
         return await message.reply("/vctag  ᴛʏᴘᴇ ʟɪᴋᴇ ᴛʜɪs / ʀᴇᴘʟʏ ᴀɴʏ ᴍᴇssᴀɢᴇ ɴᴇxᴛ ᴛɪᴍᴇ. ..")
     if chat_id in spam_chats:
         return await message.reply("⬤ ᴘʟᴇᴀsᴇ ᴀᴛ ғɪʀsᴛ sᴛᴏᴘ ʀᴜɴɴɪɴɢ ᴍᴇɴᴛɪᴏɴ ᴘʀᴏᴄᴇss . . .")
-    spam_chats.append(chat_id)
+    SPAM_CHATS.append(chat_id)
     usrnum = 0
     usrtxt = ""
     async for usr in client.get_chat_members(chat_id):
-        if not chat_id in spam_chats:
+        if not chat_id in SPAM_CHATS:
             break
         if usr.user.is_bot:
             continue
@@ -589,12 +589,12 @@ async def mentionall(client, message):
             usrnum = 0
             usrtxt = ""
     try:
-        spam_chats.remove(chat_id)
+        SPAM_CHATS.remove(chat_id)
     except:
         pass
 
 
-@app.on_message(filters.command(["hitag" ], prefixes=["/", "@", "#", "!"]))
+@app.on_message(filters.command(["hitag" ], prefixes=["/", "@", "#", ".", "!"]))
 async def mentionall(client, message):
     chat_id = message.chat.id
     if message.chat.type == ChatType.PRIVATE:
@@ -628,11 +628,11 @@ async def mentionall(client, message):
         return await message.reply("⬤ /hitag ʀᴇᴘʟʏ ᴀɴʏ ᴍᴇssᴀɢᴇ ɴᴇxᴛ ᴛɪᴍᴇ ʙᴏᴛ ᴛᴀɢɢɪɴɢ...")
     if chat_id in spam_chats:
         return await message.reply("⬤ ᴘʟᴇᴀsᴇ ᴀᴛ ғɪʀsᴛ sᴛᴏᴘ ʀᴜɴɴɪɴɢ ᴍᴇɴᴛɪᴏɴ ᴘʀᴏᴄᴇss...")
-    spam_chats.append(chat_id)
+    SPAM_CHATS.append(chat_id)
     usrnum = 0
     usrtxt = ""
     async for usr in client.get_chat_members(chat_id):
-        if not chat_id in spam_chats:
+        if not chat_id in SPAM_CHATS:
             break
         if usr.user.is_bot:
             continue
@@ -649,13 +649,13 @@ async def mentionall(client, message):
             usrnum = 0
             usrtxt = ""
     try:
-        spam_chats.remove(chat_id)
+        SPAM_CHATS.remove(chat_id)
     except:
         pass
 
 
 
-@app.on_message(filters.command(["lifetag" ], prefixes=["/", "@", "#", "!"]))
+@app.on_message(filters.command(["lifetag" ], prefixes=["/", "@", "#", "!", "."]))
 async def mentionall(client, message):
     chat_id = message.chat.id
     if message.chat.type == ChatType.PRIVATE:
@@ -687,13 +687,13 @@ async def mentionall(client, message):
             return await message.reply("⬤ /lifetag ʀᴇᴘʟʏ ᴀɴʏ ᴍᴇssᴀɢᴇ ɴᴇxᴛ ᴛɪᴍᴇ ғᴏᴛ ᴛᴀɢɢɪɴɢ...")
     else:
         return await message.reply("⬤ /lifetag ʀᴇᴘʟʏ ᴀɴʏ ᴍᴇssᴀɢᴇ ɴᴇxᴛ ᴛɪᴍᴇ ʙᴏᴛ ᴛᴀɢɢɪɴɢ...")
-    if chat_id in spam_chats:
+    if chat_id in SPAM_CHATS:
         return await message.reply("⬤ ᴘʟᴇᴀsᴇ ᴀᴛ ғɪʀsᴛ sᴛᴏᴘ ʀᴜɴɴɪɴɢ ᴍᴇɴᴛɪᴏɴ ᴘʀᴏᴄᴇss...")
-    spam_chats.append(chat_id)
+    SPAM_CHATS.append(chat_id)
     usrnum = 0
     usrtxt = ""
     async for usr in client.get_chat_members(chat_id):
-        if not chat_id in spam_chats:
+        if not chat_id in SPAM_CHATS:
             break
         if usr.user.is_bot:
             continue
@@ -710,12 +710,12 @@ async def mentionall(client, message):
             usrnum = 0
             usrtxt = ""
     try:
-        spam_chats.remove(chat_id)
+        SPAM_CHATS.remove(chat_id)
     except:
         pass
 
 
-@app.on_message(filters.command(["entag" ], prefixes=["/", "@", "#", "!"]))
+@app.on_message(filters.command(["entag" ], prefixes=["/", "@", "#", "!", "."]))
 async def mentionall(client, message):
     chat_id = message.chat.id
     if message.chat.type == ChatType.PRIVATE:
@@ -747,13 +747,13 @@ async def mentionall(client, message):
             return await message.reply("⬤ /entag ʀᴇᴘʟʏ ᴀɴʏ ᴍᴇssᴀɢᴇ ɴᴇxᴛ ᴛɪᴍᴇ ғᴏᴛ ᴛᴀɢɢɪɴɢ...")
     else:
         return await message.reply("⬤ /entag ʀᴇᴘʟʏ ᴀɴʏ ᴍᴇssᴀɢᴇ ɴᴇxᴛ ᴛɪᴍᴇ ʙᴏᴛ ᴛᴀɢɢɪɴɢ...")
-    if chat_id in spam_chats:
+    if chat_id in SPAM_CHATS:
         return await message.reply("⬤ ᴘʟᴇᴀsᴇ ᴀᴛ ғɪʀsᴛ sᴛᴏᴘ ʀᴜɴɴɪɴɢ ᴍᴇɴᴛɪᴏɴ ᴘʀᴏᴄᴇss...")
-    spam_chats.append(chat_id)
+    SPAM_CHATS.append(chat_id)
     usrnum = 0
     usrtxt = ""
     async for usr in client.get_chat_members(chat_id):
-        if not chat_id in spam_chats:
+        if not chat_id in SPAM_CHATS:
             break
         if usr.user.is_bot:
             continue
@@ -770,12 +770,12 @@ async def mentionall(client, message):
             usrnum = 0
             usrtxt = ""
     try:
-        spam_chats.remove(chat_id)
+        SPAM_CHATS.remove(chat_id)
     except:
         pass
 
 
-@app.on_message(filters.command(["bntag" ], prefixes=["/", "@", "#", "!"]))
+@app.on_message(filters.command(["bntag" ], prefixes=["/", "@", "#", ".", "!"]))
 async def mentionall(client, message):
     chat_id = message.chat.id
     if message.chat.type == ChatType.PRIVATE:
@@ -807,13 +807,13 @@ async def mentionall(client, message):
             return await message.reply("⬤ /bntag ʀᴇᴘʟʏ ᴀɴʏ ᴍᴇssᴀɢᴇ ɴᴇxᴛ ᴛɪᴍᴇ ғᴏᴛ ᴛᴀɢɢɪɴɢ...")
     else:
         return await message.reply("⬤ /bntag ʀᴇᴘʟʏ ᴀɴʏ ᴍᴇssᴀɢᴇ ɴᴇxᴛ ᴛɪᴍᴇ ʙᴏᴛ ᴛᴀɢɢɪɴɢ...")
-    if chat_id in spam_chats:
+    if chat_id in SPAM_CHATS:
         return await message.reply("⬤ ᴘʟᴇᴀsᴇ ᴀᴛ ғɪʀsᴛ sᴛᴏᴘ ʀᴜɴɴɪɴɢ ᴍᴇɴᴛɪᴏɴ ᴘʀᴏᴄᴇss...")
-    spam_chats.append(chat_id)
+    SPAM_CHATS.append(chat_id)
     usrnum = 0
     usrtxt = ""
     async for usr in client.get_chat_members(chat_id):
-        if not chat_id in spam_chats:
+        if not chat_id in SPAM_CHATS:
             break
         if usr.user.is_bot:
             continue
@@ -830,12 +830,12 @@ async def mentionall(client, message):
             usrnum = 0
             usrtxt = ""
     try:
-        spam_chats.remove(chat_id)
+        SPAM_CHATS.remove(chat_id)
     except:
         pass
 
 
-@app.on_message(filters.command(["stag" ], prefixes=["/", "@", "#", "!"]))
+@app.on_message(filters.command(["stag" ], prefixes=["/", "@", "#", ".", "!"]))
 async def mentionall(client, message):
     chat_id = message.chat.id
     if message.chat.type == ChatType.PRIVATE:
@@ -867,13 +867,13 @@ async def mentionall(client, message):
             return await message.reply("⬤ /stag ʀᴇᴘʟʏ ᴀɴʏ ᴍᴇssᴀɢᴇ ɴᴇxᴛ ᴛɪᴍᴇ ғᴏᴛ ᴛᴀɢɢɪɴɢ...")
     else:
         return await message.reply("⬤ /stag ʀᴇᴘʟʏ ᴀɴʏ ᴍᴇssᴀɢᴇ ɴᴇxᴛ ᴛɪᴍᴇ ʙᴏᴛ ᴛᴀɢɢɪɴɢ...")
-    if chat_id in spam_chats:
+    if chat_id in SPAM_CHATS:
         return await message.reply("⬤ ᴘʟᴇᴀsᴇ ᴀᴛ ғɪʀsᴛ sᴛᴏᴘ ʀᴜɴɴɪɴɢ ᴍᴇɴᴛɪᴏɴ ᴘʀᴏᴄᴇss...")
-    spam_chats.append(chat_id)
+    SPAM_CHATS.append(chat_id)
     usrnum = 0
     usrtxt = ""
     async for usr in client.get_chat_members(chat_id):
-        if not chat_id in spam_chats:
+        if not chat_id in SPAM_CHATS:
             break
         if usr.user.is_bot:
             continue
@@ -890,14 +890,14 @@ async def mentionall(client, message):
             usrnum = 0
             usrtxt = ""
     try:
-        spam_chats.remove(chat_id)
+        SPAM_CHATS.remove(chat_id)
     except:
         pass
 
 
-@app.on_message(filters.command(["sstop"]))
+@app.on_message(filters.command(["sstop"], prefixes=["!", ".", "/"]))
 async def cancel_spam(client, message):
-    if not message.chat.id in spam_chats:
+    if not message.chat.id in SPAM_CHATS:
         return await message.reply("⬤ ᴄᴜʀʀᴇɴᴛʟʏ ɪ'ᴍ ɴᴏᴛ ᴛᴀɢɢɪɴɢ ʙᴀʙʏ.")
     is_admin = False
     try:
@@ -914,15 +914,15 @@ async def cancel_spam(client, message):
         return await message.reply("⬤ ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀᴅᴍɪɴ ʙᴀʙʏ , ᴏɴʟʏ ᴀᴅᴍɪɴ ᴄᴀɴ ᴅᴏ ᴛʜɪs.")
     else:
         try:
-            spam_chats.remove(message.chat.id)
+            SPAM_CHATS.remove(message.chat.id)
         except:
             pass
         return await message.reply("♥︎ sʜᴀʏᴀʀɪ ᴛᴀɢ sᴛᴏᴘᴇᴅ.")
 
 
-@app.on_message(filters.command(["enstop", "bnstop"]))
+@app.on_message(filters.command(["enstop", "bnstop"], prefixes=[".", "!", "/", "@"]))
 async def cancel_spam(client, message):
-    if not message.chat.id in spam_chats:
+    if not message.chat.id in SPAM_CHATS:
         return await message.reply("⬤ ᴄᴜʀʀᴇɴᴛʟʏ ɪ'ᴍ ɴᴏᴛ ᴛᴀɢɢɪɴɢ ʙᴀʙʏ.")
     is_admin = False
     try:
@@ -939,15 +939,15 @@ async def cancel_spam(client, message):
         return await message.reply("⬤ ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀᴅᴍɪɴ ʙᴀʙʏ, ᴏɴʟʏ ᴀᴅᴍɪɴs ᴄᴀɴ ᴛᴀɢ ᴍᴇᴍʙᴇʀs.")
     else:
         try:
-            spam_chats.remove(message.chat.id)
+            SPAM_CHATS.remove(message.chat.id)
         except:
             pass
         return await message.reply("♥︎ ᴇɴɢʟɪsʜ/ʙᴀɴɢʟᴀ ᴛᴀɢ sᴛᴏᴘᴘᴇᴅ.")
 
 
-@app.on_message(filters.command(["histop", "lstop"]))
+@app.on_message(filters.command(["histop", "lstop"], prefixes=[",", "!", "/", "."]))
 async def cancel_spam(client, message):
-    if not message.chat.id in spam_chats:
+    if not message.chat.id in SPAM_CHATS:
         return await message.reply("⬤ ᴄᴜʀʀᴇɴᴛʟʏ ɪ'ᴍ ɴᴏᴛ ᴛᴀɢɢɪɴɢ ʙᴀʙʏ.")
     is_admin = False
     try:
@@ -964,16 +964,16 @@ async def cancel_spam(client, message):
         return await message.reply("⬤ ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀᴅᴍɪɴ ʙᴀʙʏ, ᴏɴʟʏ ᴀᴅᴍɪɴs ᴄᴀɴ ᴛᴀɢ ᴍᴇᴍʙᴇʀs.")
     else:
         try:
-            spam_chats.remove(message.chat.id)
+            SPAM_CHATS.remove(message.chat.id)
         except:
             pass
         return await message.reply("♥︎ ʜɪɴᴅɪ/ʟɪғᴇ ᴛᴀɢ sᴛᴏᴘᴘᴇᴅ.")
 
 
 
-@app.on_message(filters.command(["rstop", "vstop"]))
+@app.on_message(filters.command(["rstop", "vstop"], prefixes=[",", ".", "/", "@", "!"]))
 async def cancel_spam(client, message):
-    if not message.chat.id in spam_chats:
+    if not message.chat.id in SPAM_CHATS:
         return await message.reply("⬤ ᴄᴜʀʀᴇɴᴛʟʏ ɪ'ᴍ ɴᴏᴛ ᴛᴀɢɢɪɴɢ ʙᴀʙʏ.")
     is_admin = False
     try:
@@ -990,7 +990,7 @@ async def cancel_spam(client, message):
         return await message.reply("⬤ ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀᴅᴍɪɴ ʙᴀʙʏ, ᴏɴʟʏ ᴀᴅᴍɪɴs ᴄᴀɴ ᴅᴏ ᴛʜɪs.")
     else:
         try:
-            spam_chats.remove(message.chat.id)
+            SPAM_CHATS.remove(message.chat.id)
         except:
             pass
         return await message.reply("♥︎ ʀᴀɴᴅᴏᴍ ᴍᴇssᴀɢᴇ ᴛᴀɢ sᴛᴏᴘᴘᴇᴅ.")
