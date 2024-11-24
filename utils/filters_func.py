@@ -1,8 +1,8 @@
 from enum import Enum, auto
 from Alex import app
 from pyrogram.types import InlineKeyboardMarkup, Message
-from .utils.msg_types import button_markdown_parser
-from .utils.notes_func import NoteFillings
+from .msg_types import button_markdown_parser
+from .notes_func import NoteFillings
 from emojis import decode
 from pyrogram.types import Message
 
