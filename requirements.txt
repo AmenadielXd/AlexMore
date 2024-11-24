@@ -1,4 +1,5 @@
 emojis
+httpx[http2]
 pyfiglet
 pytz
 telegraph
