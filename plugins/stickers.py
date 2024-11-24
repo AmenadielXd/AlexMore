@@ -10,7 +10,7 @@ from Alex import app
 from pyrogram import Client, filters
 import pyrogram
 from uuid import uuid4
-from pyrogram.types import Message InlineKeyboardButton,InlineKeyboardMarkup
+from pyrogram.types import Message, InlineKeyboardButton,InlineKeyboardMarkup
 from io import BytesIO
 from traceback import format_exc
 from PIL import Image, ImageDraw, ImageFont
