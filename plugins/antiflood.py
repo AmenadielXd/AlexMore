@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from pyrogram.types import ChatPermissions, InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.errors import UserAdminInvalid
 from pyrogram.enums import ChatMemberStatus
-from Alex.utils.permissions import adminsOnly, member_permissions
+from utils.permissions import adminsOnly, member_permissions
 from pyrogram import Client, filters
 from pyrogram.types import CallbackQuery, ChatPermissions
 from pyrogram.enums import ChatMemberStatus
