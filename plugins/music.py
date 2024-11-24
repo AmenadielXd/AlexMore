@@ -12,6 +12,7 @@ from pyrogram.types import (InlineKeyboardButton,
 from config import (BANNED_USERS, SONG_DOWNLOAD_DURATION,
                     SONG_DOWNLOAD_DURATION_LIMIT)
 from Alex import YouTube, app
+from Alex.utils.decorators.language import language, languageCB
 from Alex.utils.formatters import convert_bytes
 from Alex.utils.inline.song import song_markup
 
@@ -22,6 +23,7 @@ from Alex.utils.inline.song import song_markup
     & filters.group
     & ~BANNED_USERS
 )
+@language
 async def song_commad_group(client, message: Message, _):
     upl = InlineKeyboardMarkup(
         [
@@ -44,6 +46,7 @@ async def song_commad_group(client, message: Message, _):
     & filters.private
     & ~BANNED_USERS
 )
+@language
 async def song_commad_private(client, message: Message, _):
     await message.delete()
     url = await YouTube.url(message)
@@ -106,6 +109,7 @@ async def song_commad_private(client, message: Message, _):
 @app.on_callback_query(
     filters.regex(pattern=r"song_back") & ~BANNED_USERS
 )
+@languageCB
 async def songs_back_helper(client, CallbackQuery, _):
     callback_data = CallbackQuery.data.strip()
     callback_request = callback_data.split(None, 1)[1]
@@ -119,6 +123,7 @@ async def songs_back_helper(client, CallbackQuery, _):
 @app.on_callback_query(
     filters.regex(pattern=r"song_helper") & ~BANNED_USERS
 )
+@languageCB
 async def song_helper_cb(client, CallbackQuery, _):
     callback_data = CallbackQuery.data.strip()
     callback_request = callback_data.split(None, 1)[1]
@@ -211,6 +216,7 @@ async def song_helper_cb(client, CallbackQuery, _):
 @app.on_callback_query(
     filters.regex(pattern=r"song_download") & ~BANNED_USERS
 )
+@languageCB
 async def song_download_cb(client, CallbackQuery, _):
     try:
         await CallbackQuery.answer("Downloading")
