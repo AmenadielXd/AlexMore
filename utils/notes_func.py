@@ -6,7 +6,7 @@ from pyrogram.types import InlineKeyboardMarkup
 from Alex import app
 from Alex.mongo.notesdb import GetNote
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
-from .utils.msg_types import button_markdown_parser
+from .msg_types import button_markdown_parser
 
 class NoteTypeMap(Enum):
     text = auto()
