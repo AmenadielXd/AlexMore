@@ -17,8 +17,8 @@ from typing import Dict, Union
 from Alex import app
 from Alex.misc import SUDOERS
 from Alex.core.mongo import mongodb
-from Alex.utils.error import capture_err
-from Alex.utils.keyboard import ikb
+from utils.error import capture_err
+from utils.keyboard import ikb
 from Alex.utils.functions import (
     extract_user,
     extract_user_and_reason,
