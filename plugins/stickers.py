@@ -28,7 +28,7 @@ from utils.files import (
     resize_file_to_sticker_size,
     upload_document,
 )
-from Alex.utils.stickerset import (
+from utils.stickerset import (
     add_sticker_to_set,
     create_sticker,
     create_sticker_set,
