@@ -19,12 +19,12 @@ from Alex.misc import SUDOERS
 from Alex.core.mongo import mongodb
 from utils.error import capture_err
 from utils.keyboard import ikb
-from Alex.utils.functions import (
+from utils.functions import (
     extract_user,
     extract_user_and_reason,
     time_converter,
 )
-from Alex.utils.permissions import adminsOnly, member_permissions
+from utils.permissions import adminsOnly, member_permissions
 from config import BANNED_USERS
 
 warnsdb = mongodb.warns
