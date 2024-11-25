@@ -1,6 +1,7 @@
 emojis
 gTTS
 httpx[http2]
+pycountry
 pyfiglet
 pytz
 telegraph
