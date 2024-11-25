@@ -21,4 +21,4 @@ async def text_to_speech(client, message):
 
     audio_file = io.BytesIO(audio_data.read())
     audio_file.name = "Nova UI.mp3"
-    await message.reply_audio(Nova UI_file)
+    await message.reply_audio(audio_file)
