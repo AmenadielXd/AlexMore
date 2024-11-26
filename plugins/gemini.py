@@ -81,4 +81,3 @@ async def chat_gpt(bot, message):
                 await message.reply_text(f"ᴇʀʀᴏʀ ᴘʀᴏᴄᴇssɪɴɢ ʀᴇsᴘᴏɴsᴇ: {e}")
     except Exception as e:
         await message.reply_text(f"Error - {e}")
-Updated ai
