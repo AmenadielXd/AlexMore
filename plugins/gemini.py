@@ -70,7 +70,7 @@ async def send_typing_action(client: Client, chat_id: int, duration: int = 1):
     await client.send_chat_action(chat_id, ChatAction.TYPING)
     await asyncio.sleep(duration)
 
-@Client.on_message(filters.command("ai"))
+@app.on_message(filters.command("ai"))
 async def ask_query_command(client: Client, message: Message):
     if FSUB and not await get_fsub(client, message):
         return
@@ -82,7 +82,7 @@ async def ask_query_command(client: Client, message: Message):
     else:
         await message.reply_text("ᴘʟᴇᴀsᴇ ᴘʀᴏᴠɪᴅᴇ ᴀ ǫᴜᴇʀʏ ᴛᴏ ᴀsᴋ <b>ɢᴘᴛ-𝟺</b>. ᴅᴏɴ'ᴛ ʙᴇ sʜʏ, ʟᴇᴛ's ᴄʜᴀᴛ!")
 
-@Client.on_message(filters.mentioned & filters.group)
+@app.on_message(filters.mentioned & filters.group)
 async def handle_mention(client: Client, message: Message):
     if FSUB and not await get_fsub(client, message):
         return
