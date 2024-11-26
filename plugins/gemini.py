@@ -70,7 +70,7 @@ async def send_typing_action(client: Client, chat_id: int, duration: int = 1):
     await client.send_chat_action(chat_id, ChatAction.TYPING)
     await asyncio.sleep(duration)
 
-@app.on_message(filters.command("ai"))
+@app.on_message(filters.command(["ai", "ask", ”gemini"]), prefixes=[".", "!", " ", "/" ])
 async def ask_query_command(client: Client, message: Message):
     if FSUB and not await get_fsub(client, message):
         return
