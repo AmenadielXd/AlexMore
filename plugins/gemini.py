@@ -9,15 +9,6 @@ from Alex import app
 
 
 
-from pyrogram.types import Message
-from pyrogram.enums import ChatAction
-import requests
-import asyncio
-from info import *  # Assuming sensitive info like API keys and configurations are imported here
-from database import *  # Assuming database functions (like FSUB, get_fsub) are defined here
-
-
-
 # Generate a detailed prompt for image creation
 def generate_long_query(query):
     return f"{query}."
