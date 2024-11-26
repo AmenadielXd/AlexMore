@@ -70,14 +70,19 @@ async def send_typing_action(client: Client, chat_id: int, duration: int = 1):
     await client.send_chat_action(chat_id, ChatAction.TYPING)
     await asyncio.sleep(duration)
 
+import logging
+logging.basicConfig(level=logging.INFO)
+
 @app.on_message(filters.command(["ai", "ask", "gemini"], prefixes=[".", "!", "/", ""]))
 async def ask_query_command(client: Client, message: Message):
+    logging.info(f"Received command: {message.text}")
     if FSUB and not await get_fsub(client, message):
         return
     query = message.text.split(" ", 1)
     if len(query) > 1:
         await send_typing_action(client, message.chat.id)
         reply = ask_query(query[1])
+        logging.info(f"API response: {reply}")
         await message.reply_text(f"{message.from_user.mention}, {reply} 🚀")
     else:
         await message.reply_text("ᴘʟᴇᴀsᴇ ᴘʀᴏᴠɪᴅᴇ ᴀ ǫᴜᴇʀʏ ᴛᴏ ᴀsᴋ <b>ɢᴘᴛ-𝟺</b>. ᴅᴏɴ'ᴛ ʙᴇ sʜʏ, ʟᴇᴛ's ᴄʜᴀᴛ!")
