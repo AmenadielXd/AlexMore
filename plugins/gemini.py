@@ -13,7 +13,7 @@ def generate_long_query(query):
 @app.on_message(filters.command(["draw"], prefixes=["", "!", "/", "."]))
 async def draw_image(client, message):
     if len(message.command) < 2:
-        await message.reply_text("ᴘʟᴇᴀsᴇ ᴘʀᴏᴠɪᴅᴇ ᴀ ǫᴜᴇʀʏ ᴛᴏ ɢᴇɴᴇʀᴀᴛᴇ ᴀɴ ɪᴍᴀɢᴇ.")
+        await message.reply_text("<b>ᴘʟᴇᴀsᴇ ᴘʀᴏᴠɪᴅᴇ ᴀ ǫᴜᴇʀʏ ᴛᴏ ɢᴇɴᴇʀᴀᴛᴇ ᴀɴ ɪᴍᴀɢᴇ.</b>")
         return
 
     # Generate a long query for better image results
@@ -58,8 +58,8 @@ async def chat_gpt(bot, message):
         else:
             query = message.text.split(' ', 1)[1]
 
-            # Fetch response from the new API
-            response = requests.get(f'https://search.codesearch.workers.dev/?query={query}')
+            # Fetch response from the updated API
+            response = requests.get(f'https://chatwithai.codesearch.workers.dev/?chat={query}')
 
             try:
                 # Check if response is valid
