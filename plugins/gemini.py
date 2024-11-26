@@ -3,7 +3,7 @@ from pyrogram.enums import ChatAction
 from pyrogram import Client, filters
 import requests
 import asyncio
-from Alex.utils.database import *  # Assuming database functions (like FSUB, get_fsub) are defined here
+from Alex.utils.database import get_fsub # Assuming database functions (like FSUB, get_fsub) are defined here
 import aiohttp
 from Alex import app
 
