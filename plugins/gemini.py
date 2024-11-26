@@ -1,11 +1,56 @@
-from pyrogram.types import Message
-from pyrogram.enums import ChatAction
-from pyrogram import Client, filters
-import requests
-import asyncio
-from Alex.utils.database import get_fsub # Assuming database functions (like FSUB, get_fsub) are defined here
 import aiohttp
+import time
+import requests
 from Alex import app
+from config import BOT_USERNAME
+from pyrogram import Client, filters
+from pyrogram.enums import ChatAction, ParseMode
+ 
+
+# Generate a detailed prompt for image creation
+def generate_long_query(query):
+    return f"{query}."
+
+@app.on_message(filters.command(["draw"]=["", "!", "/", "."]))
+async def draw_image(client, message):
+    if len(message.command) < 2:
+        await message.reply_text("Please provide a query to generate an image. 😊")
+        return
+
+    # Generate a long query for better image results
+    user_query = message.text.split(" ", 1)[1]
+    query = generate_long_query(user_query)
+
+    # Send initial message
+    wait_message = await message.reply_text("<b>Generating image, please wait...</b> ⏳")
+
+    # Asynchronous request using aiohttp
+    url = f"https://text2img.codesearch.workers.dev/?prompt={query}"
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                if response.status == 200:
+                    image_data = await response.json()
+                    if "imageUrl" in image_data:
+                        image_url = image_data["imageUrl"]
+                        await wait_message.delete()  # Delete wait message
+                        await message.reply_photo(photo=image_url, caption=f"Generated Image for: {user_query} 🖼️")
+                    else:
+                        await wait_message.edit_text("No images were returned. Please try again. ❌")
+                else:
+                    await wait_message.edit_text("Error: Unable to generate image at this time. Please try later. 🚫")
+    except Exception as e:
+        # Try to edit or delete the message only if it exists
+        try:
+            await wait_message.edit_text(f"An error occurred: {e} ⚠️")
+        except Exception:
+            await message.reply_text(f"An error occurred: {e} ⚠️")
+
+
+
+
+
+
 
 
 
@@ -50,57 +95,42 @@ async def draw_image(client, message):
 
 
 
-BASE_URL = "https://chatwithai.codesearch.workers.dev/?chat="
 
-def ask_query(query: str) -> str:
+
+@app.on_message(filters.command(["chatgpt", "ai", "ask", "gpt", "solve", "gemini"], prefixes=["!", ".", "/", ""]))
+async def chat_gpt(bot, message):
     try:
-        # Send GET request to the API
-        response = requests.get(f"{BASE_URL}{query}")
-        response.raise_for_status()
-        # Parse JSON response
-        data = response.json()  # Convert the response to a JSON object
-        # Extract and return the "data" field if present
-        return data.get("data", "⚠️ Error: Unexpected response format")
-    except requests.exceptions.RequestException as e:
-        return f"<b>ᴇʀʀᴏʀ:</b> {str(e)}"
-    except json.JSONDecodeError:
-        return "<b>ᴇʀʀᴏʀ:</b> ғᴀɪʟᴇᴅ ᴛᴏ ᴅᴇᴄᴏᴅᴇ ᴛʜᴇ ʀᴇsᴘᴏɴsᴇ ғʀᴏᴍ ᴛʜᴇ sᴇʀᴠᴇʀ."
+        start_time = time.time()
+        await bot.send_chat_action(message.chat.id, ChatAction.TYPING)
 
-async def send_typing_action(client: Client, chat_id: int, duration: int = 1):
-    await client.send_chat_action(chat_id, ChatAction.TYPING)
-    await asyncio.sleep(duration)
+        if len(message.command) < 2:
+            await message.reply_text(
+                "⬤ <b>ᴇxᴀᴍᴘʟᴇ ➠</b> <code>/ask What is Python?</code>"
+            )
+        else:
+            query = message.text.split(' ', 1)[1]
 
-import logging
-logging.basicConfig(level=logging.INFO)
+            # Fetch response from the new API
+            response = requests.get(f'https://search.codesearch.workers.dev/?query={query}')
 
-@app.on_message(filters.command(["ai", "ask", "gemini"], prefixes=[".", "!", "/", ""]))
-async def ask_query_command(client: Client, message: Message):
-    logging.info(f"Received command: {message.text}")
-    if FSUB and not await get_fsub(client, message):
-        return
-    query = message.text.split(" ", 1)
-    if len(query) > 1:
-        await send_typing_action(client, message.chat.id)
-        reply = ask_query(query[1])
-        logging.info(f"API response: {reply}")
-        await message.reply_text(f"{message.from_user.mention}, {reply} 🚀")
-    else:
-        await message.reply_text("ᴘʟᴇᴀsᴇ ᴘʀᴏᴠɪᴅᴇ ᴀ ǫᴜᴇʀʏ ᴛᴏ ᴀsᴋ <b>ɢᴘᴛ-𝟺</b>. ᴅᴏɴ'ᴛ ʙᴇ sʜʏ, ʟᴇᴛ's ᴄʜᴀᴛ!")
+            try:
+                # Check if response is valid
+                if response.status_code == 200:
+                    result = response.text  # Assuming the API returns text; adjust if it returns JSON or another format.
+                    end_time = time.time()
+                    telegram_ping = str(round((end_time - start_time) * 1000, 3)) + " ms"
 
-@app.on_message(filters.mentioned & filters.group)
-async def handle_mention(client: Client, message: Message):
-    if FSUB and not await get_fsub(client, message):
-        return
-    user_text = (
-        message.reply_to_message.text.strip()
-        if message.reply_to_message
-        else message.text.split(" ", 1)[1].strip()
-        if len(message.text.split(" ", 1)) > 1
-        else ""
-    )
-    if user_text:
-        await send_typing_action(client, message.chat.id)
-        reply = ask_query(user_text)
-        await message.reply_text(f"{message.from_user.mention}, {reply} 🚀")
-    else:
-        await message.reply("ᴘʟᴇᴀsᴇ ᴀsᴋ ᴀ ǫᴜᴇsᴛɪᴏɴ ᴀғᴛᴇʀ ᴍᴇɴᴛɪᴏɴɪɴɢ ᴍᴇ! ɪ'ᴍ ʜᴇʀᴇ ᴛᴏ ʜᴇʟᴘ!")
+                    await message.reply_text(
+                        f"⥤ ʀᴇsᴜʟᴛ :\n➥    {result}\n\n"
+                        f"⬤ ᴀɴsᴡᴇʀɪɴɢ ʙʏ ➠ [Nova UI](t.me/novauibot)\n\n"
+                        f"⏱️ ʀᴇsᴘᴏɴsᴇ ᴛɪᴍᴇ: {telegram_ping}",
+                        parse_mode=ParseMode.MARKDOWN,
+                        disable_web_page_preview=True
+                    )
+                else:
+                    await message.reply_text("ɴᴏ ᴠᴀʟɪᴅ ʀᴇsᴘᴏɴsᴇ ғʀᴏᴍ ᴛʜᴇ ɢᴇᴍɪɴɪ.")
+            except Exception as e:
+                await message.reply_text(f"ᴇʀʀᴏʀ ᴘʀᴏᴄᴇssɪɴɢ ʀᴇsᴘᴏɴsᴇ: {e}")
+    except Exception as e:
+        await message.reply_text(f"Error - {e}")
+Updated ai
