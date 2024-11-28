@@ -24,7 +24,7 @@ def get_keyboard(command):
     ])
 
 
-@app.on_message(filters.command("delall", "deleteall"))
+@app.on_message(filters.command("deleteall"))
 async def deleteall_command(client, message):
     chat_id = message.chat.id
     user_id = message.from_user.id
