@@ -64,7 +64,13 @@ async def chat_gpt(bot, message):
             try:
                 # Check if response is valid
                 if response.status_code == 200:
-                    result = response.text  # Assuming the API returns text; adjust if it returns JSON or another format.
+                    # Parse the JSON response
+                    api_data = response.json()  # JSON parsing
+                    if "data" in api_data:
+                        result = api_data["data"]  # Extract the 'data' field
+                    else:
+                        result = "⥤ Error: Invalid API Response Format"
+
                     end_time = time.time()
                     telegram_ping = str(round((end_time - start_time) * 1000, 3)) + " ms"
 
@@ -76,8 +82,8 @@ async def chat_gpt(bot, message):
                         disable_web_page_preview=True
                     )
                 else:
-                    await message.reply_text("ɴᴏ ᴠᴀʟɪᴅ ʀᴇsᴘᴏɴsᴇ ғʀᴏᴍ ᴛʜᴇ ɢᴇᴍɪɴɪ.")
+                    await message.reply_text("⥤ ɴᴏ ᴠᴀʟɪᴅ ʀᴇsᴘᴏɴsᴇ ғʀᴏᴍ ᴛʜᴇ ɢᴇᴍɪɴɪ.")
             except Exception as e:
-                await message.reply_text(f"ᴇʀʀᴏʀ ᴘʀᴏᴄᴇssɪɴɢ ʀᴇsᴘᴏɴsᴇ: {e}")
+                await message.reply_text(f"⥤ ᴇʀʀᴏʀ ᴘʀᴏᴄᴇssɪɴɢ ʀᴇsᴘᴏɴsᴇ: {e}")
     except Exception as e:
-        await message.reply_text(f"Error - {e}")
+        await message.reply_text(f"⥤ Error - {e}")
