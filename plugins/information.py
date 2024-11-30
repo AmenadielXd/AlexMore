@@ -1,105 +1,114 @@
-import asyncio, os, time, aiohttp
-from asyncio import sleep
-from Alex import app
-from pyrogram import filters, Client, enums
-from pyrogram.enums import ParseMode
-from pyrogram.types import *
-from pyrogram.types import InlineQueryResultArticle, InputTextMessageContent
-from typing import Union, Optional
+import os
+
+from pyrogram import filters
 from pyrogram.types import Message
 
-
-# user information 
-INFO_TEXT = """
-<u><b>ᴜsᴇʀ ɪɴғᴏʀᴍᴀᴛɪᴏɴ</b></u>
-<b>● ᴜsᴇʀ ɪᴅ ➠</b> <code>{}</code>
-<b>● ᴜsᴇʀɴᴀᴍᴇ ➠</b> <code>@{}</code>
-<b>● ᴍᴇɴᴛɪᴏɴ ➠</b> {}
-<b>● ᴜsᴇʀ sᴛᴀᴛᴜs ➠</b> {}
-<b>● ᴜsᴇʀ ᴅᴄ ɪᴅ ➠</b> {}
-"""
-
-# --------------------------------------------------------------------------------- #
-
-async def userstatus(user_id):
-   try:
-      user = await app.get_users(user_id)
-      x = user.status
-      if x == enums.UserStatus.RECENTLY:
-         return "recently."
-      elif x == enums.UserStatus.LAST_WEEK:
-          return "last week."
-      elif x == enums.UserStatus.LONG_AGO:
-          return "seen long ago."
-      elif x == enums.UserStatus.OFFLINE:
-          return "User is offline."
-      elif x == enums.UserStatus.ONLINE:
-         return "User is online."
-   except:
-        return "**✦ sᴏᴍᴇᴛʜɪɴɢ ᴡʀᴏɴɢ ʜᴀᴘᴘᴇɴᴇᴅ !**"
-
-# --------------------------------------------------------------------------------- #
-
-@app.on_message(filters.command(["info", "information", "userinfo"], prefixes=["/", "!", "%", ",", ".", "@", "#"]))
-async def userinfo(_, message):
-    chat_id = message.chat.id
-    user_id = message.from_user.id
-
-    if not message.reply_to_message and len(message.command) == 2:
-        try:
-            user_id = message.text.split(None, 1)[1]
-            user_info = await app.get_chat(user_id)
-            user = await app.get_users(user_id)
-            status = await userstatus(user.id)
-            id = user_info.id
-            dc_id = user.dc_id
-            name = user_info.first_name
-            username = user_info.username
-            mention = user.mention
-            bio = user_info.bio
-            await app.send_message(chat_id, text=INFO_TEXT.format(
-                id, username, mention, status, dc_id), reply_to_message_id=message.id)
-        except Exception as e:
-            await message.reply_text(str(e))        
-
-    elif not message.reply_to_message:
-        try:
-            user_info = await app.get_chat(user_id)
-            user = await app.get_users(user_id)
-            status = await userstatus(user.id)
-            id = user_info.id
-            dc_id = user.dc_id
-            name = user_info.first_name
-            username = user_info.username
-            mention = user.mention
-            bio = user_info.bio
-            await app.send_message(chat_id, text=INFO_TEXT.format(
-                id, username, mention, status, dc_id), reply_to_message_id=message.id)
-        except Exception as e:
-            await message.reply_text(str(e))
+from Alex.misc import SUDOERS
+from Alex import app
+from Alex.core.sections import section
+from Alex.utils.database import is_gbanned_user, user_global_karma
+from pyrogram.enums import ParseMode
 
 
-    elif message.reply_to_message:
-        user_id = message.reply_to_message.from_user.id
-        try:
-            user_info = await app.get_chat(user_id)
-            user = await app.get_users(user_id)
-            status = await userstatus(user.id)
-            id = user_info.id
-            dc_id = user.dc_id
-            name = user_info.first_name
-            username = user_info.username
-            mention = user.mention
-            bio = user_info.bio
-            await app.send_message(chat_id, text=INFO_TEXT.format(
-                id, username, mention, status, dc_id), reply_to_message_id=message.id)
-        except Exception as e:
-            await message.reply_text(str(e))
+async def get_user_info(user, already=False):
+    if not already:
+        user = await app.get_users(user)
+    if not user.first_name:
+        return ["Deleted account", None]
+    user_id = user.id
+    username = user.username
+    first_name = user.first_name
+    mention = user.mention("Link")
+    dc_id = user.dc_id
+    is_gbanned = await is_gbanned_user(user_id)
+    is_sudo = user_id in SUDOERS
+    is_premium = user.is_premium
+    karma = await user_global_karma(user_id)
+    body = {
+        "● ᴜsᴇʀ ɪᴅ": user_id,
+        "● ɴᴀᴍᴇ": [first_name],
+        "● ᴜsᴇʀɴᴀᴍᴇ": [("@" + username) if username else "Null"],
+        "● ᴍᴇɴᴛɪᴏɴ": [mention],
+        "● ᴜsᴇʀ ᴅᴄ ɪᴅ": dc_id,
+        "● ᴜsᴇʀ sᴜᴅᴏ": is_sudo,
+        "● ᴘʀᴇᴍɪᴜᴍ": is_premium,
+        "● ᴋᴀʀᴍᴀ": karma,
+        "● ɢʟᴏʙᴀʟ-ʙᴀɴ": is_gbanned,
+    }
+    caption = section("<u><b>ᴜsᴇʀ ɪɴғᴏʀᴍᴀᴛɪᴏɴ</b></u>", body)
+    return [caption, None]
 
 
-# channel/group/user IDs 
+async def get_chat_info(chat, already=False):
+    if not already:
+        chat = await app.get_chat(chat)
+    chat_id = chat.id
+    username = chat.username
+    title = chat.title
+    type_ = str(chat.type).split(".")[1]
+    is_scam = chat.is_scam
+    description = chat.description
+    members = chat.members_count
+    is_restricted = chat.is_restricted
+    link = f"<a href='t.me/username'>link</a>" if username else "Null"
+    dc_id = chat.dc_id
+    body = {
+        "● ᴄʜᴀᴛ ɪᴅ": chat_id,
+        "● ᴄʜᴀᴛ ᴅᴄ ɪᴅ": dc_id,
+        "● ᴛʏᴘᴇ": type_,
+        "● ɴᴀᴍᴇ": [title],
+        "● ᴜsᴇʀɴᴀᴍᴇ": [("@" + username) if username else "Null"],
+        "● ᴍᴇɴᴛɪᴏɴ": [link],
+        "● ᴍᴇᴍʙᴇʀs": members,
+        "● sᴄᴀᴍ": is_scam,
+        "● ʀᴇsᴛʀɪᴄᴛᴇᴅ": is_restricted,
+        "● ᴅᴇsᴄʀɪᴘᴛɪᴏɴ": [description],
+    }
+    caption = section("<u><b>ᴄʜᴀᴛ ɪɴғᴏʀᴍᴀᴛɪᴏɴ</b></u>", body)
+    return [caption, None]
+
+
+@app.on_message(filters.command("info"))
+async def info_func(_, message: Message):
+    if message.reply_to_message:
+        user = message.reply_to_message.from_user.id
+    elif not message.reply_to_message and len(message.command) == 1:
+        user = message.from_user.id
+    elif not message.reply_to_message and len(message.command) != 1:
+        user = message.text.split(None, 1)[1]
+
+    m = await message.reply_text("<b>ᴘʀᴏᴄᴇssɪɴɢ . . .</b>")
+
+    try:
+        info_caption, _ = await get_user_info(user)  # Ignore photo_id
+    except Exception as e:
+        return await m.edit(f"{str(e)}, Perhaps you meant to use /groupinfo?")
+
+    await m.edit(info_caption, disable_web_page_preview=True)  # Directly send the caption
+
+
+@app.on_message(filters.command("groupinfo"))
+async def chat_info_func(_, message: Message):
+    splited = message.text.split()
+    if len(splited) == 1:
+        chat = message.chat.id
+        if chat == message.from_user.id:
+            return await message.reply_text(
+                "<b>ᴜsᴀɢᴇ:</b> /groupinfo [ᴜsᴇʀɴᴀᴍᴇ ᴏʀ ɪᴅ]"
+            )
+    else:
+        chat = splited[1]
+    try:
+        m = await message.reply_text("<b>ᴘʀᴏᴄᴇssɪɴɢ . . .</b>")
+
+        info_caption, _ = await get_chat_info(chat)  # Ignore photo_id
+        await m.edit(info_caption, disable_web_page_preview=True)  # Directly send the caption
+    except Exception as e:
+        await m.edit(str(e))
+
+
 @app.on_message(filters.command(["id"], prefixes=["/", "!", "%", ",", ".", "@", "#"]))
-async def getid(client, message):
+async def getid(client, message: Message):
     chat = message.chat
     reply = message.reply_to_message
 
@@ -131,59 +140,3 @@ async def getid(client, message):
         disable_web_page_preview=True,
         parse_mode=ParseMode.DEFAULT,
     )
-
-
-# chat information
-
-# Command to get group information based on username
-@app.on_message(filters.command("groupinfo", prefixes="/"))
-async def get_group_status(_, message: Message):
-    if len(message.command) != 2:
-        await message.reply("Please provide a group username. Example: `/groupinfo YourGroupUsername`")
-        return
-
-    group_username = message.command[1]
-
-    try:
-        group = await app.get_chat(group_username)
-    except Exception as e:
-        await message.reply(f"Error: {e}")
-        return
-
-    total_members = await app.get_chat_members_count(group.id)
-    group_description = group.description
-    premium_acc = banned = deleted_acc = bot = 0  # You should replace these variables with actual counts.
-
-    response_text = (
-        f"<b><u>⬤ ɢʀᴏᴜᴘ ɪɴғᴏʀᴍᴀᴛɪᴏɴ </u>𐏓</b>\n\n"
-        f"<b>● ɢʀᴏᴜᴘ ɴᴀᴍᴇ ➠</b> {group.title}\n"
-        f"<b>● ɢʀᴏᴜᴘ ɪᴅ ➠</b> {group.id}\n"
-        f"<b>● ᴛᴏᴛᴀʟ ᴍᴇᴍʙᴇʀs ➠</b> {total_members}\n"
-        f"<b>● ᴜsᴇʀɴᴀᴍᴇ ➠</b> @{group_username}\n"
-        f"<b>● ᴅᴇsᴄʀɪᴘᴛɪᴏɴ ➠</b> \n{group_description or 'N/A'}"
-    )
-
-    await message.reply(response_text)
-
-
-# Command to get the status of the current group
-@app.on_message(filters.command("status") & filters.group)
-async def group_status(client, message: Message):
-    chat = message.chat  # Chat where the command was sent
-    status_text = (
-        f"<b>● ɢʀᴏᴜᴘ ɪᴅ ➠</b> {chat.id}\n"
-        f"<b>● ᴛɪᴛʟᴇ ➠</b> {chat.title}\n"
-        f"<b>● ᴛʏᴘᴇ ➠</b> {chat.type}\n"
-    )
-
-    if chat.username:  # Not all groups have a username
-        status_text += f"<b>● ᴜsᴇʀɴᴀᴍᴇ ➠</b> @{chat.username}\n"
-    else:
-        status_text += "<b>● ᴜsᴇʀɴᴀᴍᴇ ➠</b> None\n"
-
-    await message.reply_text(status_text)
-
-
-# Running the bot
-if __name__ == "__main__":
-    app.run()
