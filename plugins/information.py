@@ -68,7 +68,7 @@ async def get_chat_info(chat, already=False):
     return [caption, None]
 
 
-@app.on_message(filters.command("info"))
+@app.on_message(filters.command(["info"], prefixes=["/", "!", "%", ",", ".", "@", "#"]))
 async def info_func(_, message: Message):
     if message.reply_to_message:
         user = message.reply_to_message.from_user.id
@@ -87,7 +87,7 @@ async def info_func(_, message: Message):
     await m.edit(info_caption, disable_web_page_preview=True)  # Directly send the caption
 
 
-@app.on_message(filters.command("groupinfo"))
+@app.on_message(filters.command(["groupinfo"], prefixes=["/", "!", "%", ",", ".", "@", "#"]))
 async def chat_info_func(_, message: Message):
     splited = message.text.split()
     if len(splited) == 1:
