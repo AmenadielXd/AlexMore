@@ -34,8 +34,8 @@ async def _whisper(_, inline_query):
 
         try:
             user = await _.get_users(user_id)
-            whisper_btn = InlineKeyboardMarkup([[InlineKeyboardButton("🔐 𝑆ℎ𝑜𝑤 𝑀𝑒𝑠𝑠𝑎𝑔𝑒", callback_data=f"fdaywhisper_{inline_query.from_user.id}_{user.id}")]])
-            one_time_whisper_btn = InlineKeyboardMarkup([[InlineKeyboardButton("🔐 𝑂𝑛𝑒-𝑇𝑖𝑚𝑒 𝑊ℎ𝑖𝑠𝑝𝑒𝑟", callback_data=f"fdaywhisper_{inline_query.from_user.id}_{user.id}_one")]])
+            whisper_btn = InlineKeyboardMarkup([[InlineKeyboardButton("🔐 Show message", callback_data=f"fdaywhisper_{inline_query.from_user.id}_{user.id}")]])
+            one_time_whisper_btn = InlineKeyboardMarkup([[InlineKeyboardButton("🔐 Show message", callback_data=f"fdaywhisper_{inline_query.from_user.id}_{user.id}_one")]])
             mm = [
                 InlineQueryResultArticle(
                     title="𝑊ℎ𝑖𝑠𝑝𝑒𝑟",
