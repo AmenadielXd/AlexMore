@@ -5,6 +5,7 @@ import pytz
 from pyrogram import enums, filters
 
 from Alex import app
+from pyrogram.types import Message
 from utils.error import capture_err
 from Alex.utils.database import get_couple, save_couple
 
