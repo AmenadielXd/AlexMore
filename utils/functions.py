@@ -329,3 +329,25 @@ def get_text(message: Message) -> [None, str]:
             return None
     else:
         return None
+
+
+async def get_user_id_and_usernames(client) -> dict:
+    with client.storage.conn:
+        query = """
+        SELECT usernames.id, usernames.username
+        FROM usernames
+        WHERE usernames.id IN (
+            SELECT peers.id
+            FROM peers
+            WHERE peers.type IN ("user", "bot") AND username IS NOT NULL
+        )
+        """
+        result = client.storage.conn.execute(query).fetchall()
+
+    users_ = {}
+    for row in result:
+        user_id = row[0]
+        username = row[1]
+        users_[user_id] = username
+
+    return users_
