@@ -42,7 +42,7 @@ def tomorrow():
 
 @app.on_message(filters.command(["couple", "couples", "shipping"], prefixes=[".", "/", "!"]))
 @capture_err
-async def couple(_, message):
+async def couple(_, message: Message):
     if message.chat.type == enums.ChatType.PRIVATE:
         return await message.reply_text("ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ ᴏɴʟʏ ᴡᴏʀᴋs ɪɴ ɢʀᴏᴜᴘs.")
 
@@ -72,12 +72,12 @@ async def couple(_, message):
 {c1_mention} + {c2_mention} = ❤️
 
 <i>ɴᴇᴡ ᴄᴏᴜᴘʟᴇ ᴏғ ᴛʜᴇ ᴅᴀʏ ᴍᴀʏ ʙᴇ ᴄʜᴏsᴇɴ ᴀᴛ 12AM {tomorrow()}</i>"""
-            await m.edit(couple_selection_message)
+            edited_message = await m.edit(couple_selection_message)
             couple = {"c1_id": c1_id, "c2_id": c2_id}
             await save_couple(chat_id, today(), couple)
 
             # Pin the message
-            await app.pin_chat_message(chat_id, m.message_id, disable_notification=True)
+            await edited_message.pin(disable_notification=True)
 
         elif is_selected:
             c1_id = int(is_selected["c1_id"])
@@ -88,10 +88,10 @@ async def couple(_, message):
 <a href='tg://openmessage?user_id={c1_id}'>{c1_name}</a> + <a href='tg://openmessage?user_id={c2_id}'>{c2_name}</a> = ❤️
 
 <i>ɴᴇᴡ ᴄᴏᴜᴘʟᴇ ᴏғ ᴛʜᴇ ᴅᴀʏ ᴍᴀʏ ʙᴇ ᴄʜᴏsᴇɴ ᴀᴛ 12AM {tomorrow()}</i>"""
-            await m.edit(couple_selection_message)
+            edited_message = await m.edit(couple_selection_message)
 
             # Pin the message
-            await app.pin_chat_message(chat_id, m.message_id, disable_notification=True)
+            await edited_message.pin(disable_notification=True)
 
     except Exception as e:
         print(f"Error: {e}")
