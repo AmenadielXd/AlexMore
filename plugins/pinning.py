@@ -38,7 +38,7 @@ async def pin(_, message: Message):
     if message.command[0][0] == "u":
         await r.unpin()
         return await message.reply_text(
-            f"<b>ᴜɴᴘɪɴɴᴇᴅ [this]<a href='{r.link}'>ᴛʜɪs ᴍᴇssᴀɢᴇ.</a></b>,
+            f"<b>ᴜɴᴘɪɴɴᴇᴅ <a href='{r.link}'>ᴛʜɪs ᴍᴇssᴀɢᴇ.</a></b>,
             disable_web_page_preview=True,
         )
     await r.pin(disable_notification=True)
