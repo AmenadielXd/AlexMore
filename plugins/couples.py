@@ -5,7 +5,7 @@ import pytz
 from pyrogram import enums, filters
 
 from Alex import app
-from Alex.core.decorators.errors import capture_err
+from utlis.errors import capture_err
 from wbb.utils.detabase import get_couple, save_couple
 
 # Date and time
