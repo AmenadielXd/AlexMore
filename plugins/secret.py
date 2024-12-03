@@ -1,5 +1,5 @@
 from Alex import app as app
-from config import BOT_USERNAME
+from config import BOT_USERNAME, OWNER_USERNAME
 from pyrogram import filters
 from pyrogram.errors import Unauthorized
 from pyrogram.types import (
@@ -104,7 +104,7 @@ async def in_help():
         InlineQueryResultArticle(
             title="𝑊ℎ𝑖𝑠𝑝𝑒𝑟",
             description=f"@{BOT_USERNAME} [ᴜsᴇʀɴᴀᴍᴇ ᴏʀ ɪᴅ] [ᴛᴇxᴛ]",
-            input_message_content=InputTextMessageContent(f"🍥 <u><b>ᴜsᴀɢᴇ:</u></b>\n➥ @{BOT_USERNAME} (ᴛᴀʀɢᴇᴛ ᴜsᴇʀɴᴀᴍᴇ ᴏʀ ɪᴅ) (ʏᴏᴜʀ ᴍᴇssᴀɢᴇ).\n<u><b>ᴇxᴀᴍᴘʟᴇ:</u></b>\n➥ @{BOT_USERNAME} @username ɪ ᴡᴀɴᴛ ʏᴏᴜ ᴋɴᴏᴡ ɪ ʟᴏᴠᴇ ʏᴏᴜ ᴛʜᴇ ᴍᴏsᴛ ♡゙"),
+            input_message_content=InputTextMessageContent(f"🍥 <u><b>ᴜsᴀɢᴇ:</u></b>\n➥ @{BOT_USERNAME} (ᴛᴀʀɢᴇᴛ ᴜsᴇʀɴᴀᴍᴇ ᴏʀ ɪᴅ) (ʏᴏᴜʀ ᴍᴇssᴀɢᴇ).\n<u><b>ᴇxᴀᴍᴘʟᴇ:</u></b>\n➥ <code>@{BOT_USERNAME} @{OWNER_USERNAME} ɪ ᴡᴀɴᴛ ʏᴏᴜ ᴋɴᴏᴡ ɪ ʟᴏᴠᴇ ʏᴏᴜ ᴛʜᴇ ᴍᴏsᴛ ♡゙</code>"),
             thumb_url="https://files.catbox.moe/5pb5il.jpg",
             reply_markup=switch_btn
         )
