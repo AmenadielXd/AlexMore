@@ -80,7 +80,7 @@ async def couple(_, message):
             c1_name = (await app.get_users(c1_id)).first_name
             c2_name = (await app.get_users(c2_id)).first_name
             couple_selection_message = f"""ᴄᴏᴜᴘʟᴇ ᴏғ ᴛʜᴇ ᴅᴀʏ:
-[{c1_name}](tg://openmessage?user_id={c1_id}) + [{c2_name}](tg://openmessage?user_id={c2_id}) = ❤️
+<a href='tg://openmessage?user_id={c1_id}'>{c1_name}</a> + <a href='tg://openmessage?user_id={c2_id}'>{c2_name}</a> = ❤️
 
 <i>ɴᴇᴡ ᴄᴏᴜᴘʟᴇ ᴏғ ᴛʜᴇ ᴅᴀʏ ᴍᴀʏ ʙᴇ ᴄʜᴏsᴇɴ ᴀᴛ 12AM {tomorrow()}</i>"""
             await m.edit(couple_selection_message)
