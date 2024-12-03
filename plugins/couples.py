@@ -6,7 +6,7 @@ from pyrogram import enums, filters
 
 from Alex import app
 from utils.error import capture_err
-from Alex.utils.detabase import get_couple, save_couple
+from Alex.utils.database import get_couple, save_couple
 
 # Date and time
 def dt():
