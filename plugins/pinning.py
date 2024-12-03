@@ -35,17 +35,18 @@ async def pin(_, message: Message):
     if not message.reply_to_message:
         return await message.reply_text("ʏᴏᴜ ɴᴇᴇᴅ ᴛᴏ ʀᴇᴘʟʏ ᴛᴏ ᴀ ᴍᴇssᴀɢᴇ ᴛᴏ ᴘɪɴ ɪᴛ!")
     r = message.reply_to_message
-    if message.command[0][0] == "u":
+    if message.command[0][0] == "u":  # Unpin case
         await r.unpin()
         return await message.reply_text(
-            f"<b>ᴜɴᴘɪɴɴᴇᴅ [this]<a href='{r.link}'>ᴛʜɪs ᴍᴇssᴀɢᴇ.</a></b>,
+            f"<b>ᴜɴᴘɪɴɴᴇᴅ <a href='{r.link}'>ᴛʜɪs ᴍᴇssᴀɢᴇ.</a></b>",
             disable_web_page_preview=True,
         )
+    # Pin case
     await r.pin(disable_notification=True)
-    await message.reply(
+    await message.reply_text(
         f"<b>ɪ ʜᴀᴠᴇ ᴘɪɴɴᴇᴅ <a href='{r.link}'>ᴛʜɪs ᴍᴇssᴀɢᴇ.</a></b>",
         disable_web_page_preview=False,
     )
-    msg = "ᴘʟᴇᴀsᴇ ᴄʜᴇᴄᴋ ᴛʜᴇ ᴘɪɴɴᴇᴅ ᴍᴇssᴀɢᴇ: ~ " + f"[ᴄʜᴇᴄᴋ, {r.link}]"
+    msg = f"ᴘʟᴇᴀsᴇ ᴄʜᴇᴄᴋ ᴛʜᴇ ᴘɪɴɴᴇᴅ ᴍᴇssᴀɢᴇ: ~ [ᴄʜᴇᴄᴋ, {r.link}]"
     filter_ = dict(type="text", data=msg)
     await save_filter(message.chat.id, "~pinned", filter_)
