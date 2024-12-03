@@ -70,9 +70,12 @@ async def couple(_, message):
 {c1_mention} + {c2_mention} = ❤️
 
 <i>ɴᴇᴡ ᴄᴏᴜᴘʟᴇ ᴏғ ᴛʜᴇ ᴅᴀʏ ᴍᴀʏ ʙᴇ ᴄʜᴏsᴇɴ ᴀᴛ 12AM {tomorrow()}</i>"""
-            await m.edit(couple_selection_message)
+            sent_message = await m.edit(couple_selection_message)
             couple = {"c1_id": c1_id, "c2_id": c2_id}
             await save_couple(chat_id, today(), couple)
+
+            # Pin the message
+            await app.pin_chat_message(chat_id, sent_message.message_id, disable_notification=True)
 
         elif is_selected:
             c1_id = int(is_selected["c1_id"])
@@ -83,7 +86,11 @@ async def couple(_, message):
 <a href='tg://openmessage?user_id={c1_id}'>{c1_name}</a> + <a href='tg://openmessage?user_id={c2_id}'>{c2_name}</a> = ❤️
 
 <i>ɴᴇᴡ ᴄᴏᴜᴘʟᴇ ᴏғ ᴛʜᴇ ᴅᴀʏ ᴍᴀʏ ʙᴇ ᴄʜᴏsᴇɴ ᴀᴛ 12AM {tomorrow()}</i>"""
-            await m.edit(couple_selection_message)
+            sent_message = await m.edit(couple_selection_message)
+
+            # Pin the message
+            await app.pin_chat_message(chat_id, sent_message.message_id, disable_notification=True)
+
     except Exception as e:
         print(e)
-        await message.reply_text(e)
+        await message.reply_text(str(e))
