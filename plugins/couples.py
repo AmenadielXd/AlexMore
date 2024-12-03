@@ -53,16 +53,18 @@ async def couple(_, message):
         is_selected = await get_couple(chat_id, today())
         if not is_selected:
             list_of_users = []
-            async for i in app.get_chat_members(message.chat.id):
+            async for i in app.get_chat_members(chat_id):
                 if not i.user.is_bot and not i.user.is_deleted:
-                    user = await app.get_users(i.user.id)
-                    list_of_users.append(user.id)
+                    list_of_users.append(i.user.id)
+
             if len(list_of_users) < 2:
                 return await m.edit("Not enough users")
+
             c1_id = random.choice(list_of_users)
             c2_id = random.choice(list_of_users)
             while c1_id == c2_id:
                 c1_id = random.choice(list_of_users)
+
             c1_mention = (await app.get_users(c1_id)).mention
             c2_mention = (await app.get_users(c2_id)).mention
 
@@ -92,5 +94,5 @@ async def couple(_, message):
             await app.pin_chat_message(chat_id, m.message_id, disable_notification=True)
 
     except Exception as e:
-        print(e)
+        print(f"Error: {e}")
         await message.reply_text(str(e))
