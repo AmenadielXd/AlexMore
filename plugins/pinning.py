@@ -33,19 +33,19 @@ async def save_filter(chat_id: int, name: str, _filter: dict):
 @adminsOnly("can_pin_messages")
 async def pin(_, message: Message):
     if not message.reply_to_message:
-        return await message.reply_text("Reply to a message to pin/unpin it.")
+        return await message.reply_text("ʏᴏᴜ ɴᴇᴇᴅ ᴛᴏ ʀᴇᴘʟʏ ᴛᴏ ᴀ ᴍᴇssᴀɢᴇ ᴛᴏ ᴘɪɴ ɪᴛ!")
     r = message.reply_to_message
     if message.command[0][0] == "u":
         await r.unpin()
         return await message.reply_text(
-            f"**Unpinned [this]({r.link}) message.**",
+            f"<b>ᴜɴᴘɪɴɴᴇᴅ [this]<a href='{r.link}'>ᴛʜɪs ᴍᴇssᴀɢᴇ.</a></b>,
             disable_web_page_preview=True,
         )
     await r.pin(disable_notification=True)
     await message.reply(
-        f"**Pinned [this]({r.link}) message.**",
-        disable_web_page_preview=True,
+        f"<b>ɪ ʜᴀᴠᴇ ᴘɪɴɴᴇᴅ <a href='{r.link}'>ᴛʜɪs ᴍᴇssᴀɢᴇ.</a></b>",
+        disable_web_page_preview=False,
     )
-    msg = "Please check the pinned message: ~ " + f"[Check, {r.link}]"
+    msg = "ᴘʟᴇᴀsᴇ ᴄʜᴇᴄᴋ ᴛʜᴇ ᴘɪɴɴᴇᴅ ᴍᴇssᴀɢᴇ: ~ " + f"[ᴄʜᴇᴄᴋ, {r.link}]"
     filter_ = dict(type="text", data=msg)
     await save_filter(message.chat.id, "~pinned", filter_)
