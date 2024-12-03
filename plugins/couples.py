@@ -78,7 +78,7 @@ async def couple(_, message: Message):
             await save_couple(chat_id, today(), couple)
 
             # Pin the message
-            await edited_message.pin(disable_notification=True)
+            await edited_message.pin(disable_notification=False)
 
         elif is_selected:
             c1_id = int(is_selected["c1_id"])
@@ -92,7 +92,7 @@ async def couple(_, message: Message):
             edited_message = await m.edit(couple_selection_message)
 
             # Pin the message
-            await edited_message.pin(disable_notification=True)
+            await edited_message.pin(disable_notification=False)
 
     except Exception as e:
         print(f"Error: {e}")
