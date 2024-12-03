@@ -1,6 +1,7 @@
-from config import OWNER_ID, SUDO_USERS
+from config import OWNER_ID
 from Alex import app
 from pyrogram import Client, filters
+from Alex.misc import SUDOERS
 from pyrogram.enums import ChatMembersFilter
 import asyncio
 
@@ -11,7 +12,7 @@ async def is_administrator_or_sudo(user_id: int, chat_id: int, client: Client):
         return True
 
     # Check if the user is in the list of sudo users
-    if user_id in SUDO_USERS:
+    if user_id in SUDOERS:
         return True
 
     # Check if the user is an administrator
@@ -20,7 +21,7 @@ async def is_administrator_or_sudo(user_id: int, chat_id: int, client: Client):
             return True
     return False
 
-@app.on_message(filters.command(["spam"], prefixes=[".", "/", "!"]) & filters.group)
+@app.on_message(filters.command(["spam"], prefixes=[".", "/", "!"]) & SUDOERS & filters.group)
 async def spam(client, message):
     try:
         user_id = message.from_user.id
