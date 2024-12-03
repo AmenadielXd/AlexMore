@@ -40,7 +40,7 @@ def tomorrow():
     return str(dt_tom())
 
 
-@app.on_message(filters.command(["couple", "couples"], prefixes=[".", "/", "!"]))
+@app.on_message(filters.command(["couple", "couples", "shipping"], prefixes=[".", "/", "!"]))
 @capture_err
 async def couple(_, message):
     if message.chat.type == enums.ChatType.PRIVATE:
@@ -79,7 +79,7 @@ async def couple(_, message):
             c2_id = int(is_selected["c2_id"])
             c1_name = (await app.get_users(c1_id)).first_name
             c2_name = (await app.get_users(c2_id)).first_name
-            couple_selection_message = f"""ᴄᴏᴜᴘʟᴇ ᴏғ ᴛʜᴇ ᴅᴀʏ:
+            couple_selection_message = f"""ᴄᴏᴜᴘʟᴇ ᴏғ ᴛʜᴇ ᴅᴀʏ ʜᴀs ʙᴇᴇɴ ᴄʜᴏsᴇɴ:
 <a href='tg://openmessage?user_id={c1_id}'>{c1_name}</a> + <a href='tg://openmessage?user_id={c2_id}'>{c2_name}</a> = ❤️
 
 <i>ɴᴇᴡ ᴄᴏᴜᴘʟᴇ ᴏғ ᴛʜᴇ ᴅᴀʏ ᴍᴀʏ ʙᴇ ᴄʜᴏsᴇɴ ᴀᴛ 12AM {tomorrow()}</i>"""
