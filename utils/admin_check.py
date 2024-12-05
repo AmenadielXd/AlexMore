@@ -41,7 +41,6 @@ async def list_admins(chat_id: int):
         if interval < 3600:
             return admins_in_chat[chat_id]["data"]
 
-    # Fetch admin list using get_chat_administrators
     admins = []
     async for member in app.get_chat_administrators(chat_id):
         admins.append(member.user.id)
