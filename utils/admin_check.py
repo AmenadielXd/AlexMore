@@ -1,6 +1,7 @@
 from pyrogram.types import Message
 from pyrogram.enums import ChatType, ChatMemberStatus
 from time import time
+from Alex import app
 
 
 async def admin_check(message: Message) -> bool:
