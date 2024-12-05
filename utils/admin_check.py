@@ -38,15 +38,16 @@ async def list_admins(chat_id: int):
     global admins_in_chat
     if chat_id in admins_in_chat:
         interval = time() - admins_in_chat[chat_id]["last_updated_at"]
-        if interval < 3600:  # 1 ghante ka cache
+        if interval < 3600:
             return admins_in_chat[chat_id]["data"]
 
-    # Admins ki nayi list fetch karo
     admins_in_chat[chat_id] = {
         "last_updated_at": time(),
         "data": [
-            admin.user.id
-            async for admin in app.get_chat_administrators(chat_id)  # Anony ka object 'app' use ho raha hai
+            member.user.id
+            async for member in app.get_chat_members(
+                chat_id, filter=ChatMembersFilter.ADMINISTRATORS
+            )
         ],
     }
     return admins_in_chat[chat_id]["data"]
