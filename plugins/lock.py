@@ -129,7 +129,7 @@ async def locktypes(_, message):
 
     perms = ""
     for i in permissions:
-        perms += f"<i><b>{i}</b><i>\n"
+        perms += f"<i><b>{i}</b></i>\n"
 
     await message.reply_text(perms)
 
