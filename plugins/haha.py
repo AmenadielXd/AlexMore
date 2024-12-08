@@ -75,7 +75,9 @@ async def handle_callback(client, callback_query: CallbackQuery):
                     try:
                         await assistant.join_chat(f"https://t.me/{chat.username}")
                     except Exception as e:
-                        await callback_query.message.edit(f"❌ Public group invite failed: {str(e)}")
+                        await callback_query.message.edit(
+                            f"❌ Failed to invite assistant to public group. Ensure the group has a valid username."
+                        )
                         return
                 else:  # Private group
                     if chat_id not in links:
