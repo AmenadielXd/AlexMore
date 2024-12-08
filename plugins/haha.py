@@ -1,28 +1,35 @@
 import asyncio
 from pyrogram import filters, enums
+from pyrogram.enums import ChatMemberStatus
 from pyrogram.errors import (
     ChatAdminRequired,
     InviteRequestSent,
     UserAlreadyParticipant,
     UserNotParticipant,
 )
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ChatPrivileges, CallbackQuery
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, ChatPrivileges
 
 from Alex import app
 from Alex.misc import SUDOERS
 from Alex.utils.database import get_assistant
 
-# Cache invite links to reduce API calls
 links = {}
+
+
+def get_keyboard(command):
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("Yes", callback_data=f"{command}_yes"),
+         InlineKeyboardButton("No", callback_data=f"{command}_no")]
+    ])
 
 
 @app.on_message(filters.command("deleteall"))
 async def deleteall_command(client, message):
     chat_id = message.chat.id
+    user_id = message.from_user.id
     assistant = await get_assistant(chat_id)
     assid = assistant.id
 
-    # Check bot permissions
     bot = await app.get_chat_member(chat_id, app.me.id)
     if not (
         bot.privileges.can_delete_messages and
@@ -30,19 +37,17 @@ async def deleteall_command(client, message):
         bot.privileges.can_invite_users
     ):
         await message.reply(
-            "❌ I need the following permissions:\n"
-            "- Delete Messages\n"
-            "- Promote Members\n"
-            "- Invite Users"
+            "I don't have enough permissions to perform mass deletion.\n\n"
+            "Permissions required:\n"
+            "- Delete messages\n"
+            "- Promote members\n"
+            "- Invite users"
         )
         return
 
-    await message.reply(
-        f"Are you sure you want to delete all messages in {message.chat.title}?",
-        reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("Yes", callback_data="deleteall_yes"),
-             InlineKeyboardButton("No", callback_data="deleteall_no")]
-        ])
+    confirm_msg = await message.reply(
+        f"{message.from_user.mention}, are you sure you want to delete all group messages?",
+        reply_markup=get_keyboard("deleteall")
     )
 
 
@@ -53,57 +58,66 @@ async def handle_callback(client, callback_query: CallbackQuery):
     assistant = await get_assistant(chat_id)
     assid = assistant.id
 
-    # Check if the user is the owner or sudoer
-    async for member in client.get_chat_members(chat_id, filter=enums.ChatMembersFilter.ADMINISTRATORS):
-        if member.status == enums.ChatMemberStatus.OWNER:
-            owner_id = member.user.id
-
-    if user_id not in SUDOERS and user_id != owner_id:
-        await callback_query.answer("❌ Only the group owner can confirm this action.", show_alert=True)
+    # Check if the user is the group owner or a sudo user
+    owner_id = None
+    async for admin in client.get_chat_members(chat_id, filter=enums.ChatMembersFilter.ADMINISTRATORS):
+        if admin.status == ChatMemberStatus.OWNER:
+            owner_id = admin.user.id
+    if user_id != owner_id and user_id not in SUDOERS:
+        await callback_query.answer("Only the group owner can confirm this action.", show_alert=True)
         return
 
     if callback_query.data == "deleteall_yes":
-        await callback_query.answer("Deleting all messages...")
+        await callback_query.answer("Delete all process started...", show_alert=True)
 
-        # Ensure assistant is in the group
+        # Invite assistant if not already in the group
         try:
             await app.get_chat_member(chat_id, assid)
         except UserNotParticipant:
             try:
                 chat = await app.get_chat(chat_id)
-                if chat.username:  # Public group
-                    try:
-                        await assistant.join_chat(f"https://t.me/{chat.username}")
-                    except Exception as e:
-                        await callback_query.message.edit(
-                            f"❌ Failed to invite assistant to public group. Ensure the group has a valid username."
-                        )
-                        return
-                else:  # Private group
-                    if chat_id not in links:
+                if chat.username:
+                    # Public group - join via username
+                    await assistant.join_chat(f"https://t.me/{chat.username}")
+                else:
+                    # Private group - join via invite link
+                    if chat_id in links:
+                        invitelink = links[chat_id]
+                    else:
                         try:
-                            invite_link = await app.export_chat_invite_link(chat_id)
-                            links[chat_id] = invite_link
+                            invitelink = await app.export_chat_invite_link(chat_id)
                         except ChatAdminRequired:
-                            await callback_query.message.edit("❌ I need invite link permissions to add the assistant.")
+                            await callback_query.message.edit("I need invite permission to add the assistant.")
                             return
-                    try:
-                        await assistant.join_chat(links[chat_id])
-                    except Exception as e:
-                        await callback_query.message.edit(f"❌ Private group invite failed: {str(e)}")
-                        return
+                        links[chat_id] = invitelink
+                    await assistant.join_chat(invitelink)
+            except InviteRequestSent:
+                try:
+                    await app.approve_chat_join_request(chat_id, assid)
+                except Exception as e:
+                    await callback_query.message.edit(f"Error approving invite: {e}")
+                    return
+            except UserAlreadyParticipant:
+                pass
             except Exception as e:
-                await callback_query.message.edit(f"❌ Failed to invite assistant: {str(e)}")
+                await callback_query.message.edit(f"Error inviting assistant: {e}")
                 return
 
-        # Promote assistant with the required privileges
-        try:
-            await app.promote_chat_member(chat_id, assid, ChatPrivileges(
-                can_delete_messages=True
-            ))
-        except Exception as e:
-            await callback_query.message.edit(f"❌ Failed to promote assistant: {str(e)}")
-            return
+        # Promote the assistant with the required privileges
+        await app.promote_chat_member(
+            chat_id,
+            assid,
+            privileges=ChatPrivileges(
+                can_manage_chat=False,
+                can_delete_messages=True,
+                can_manage_video_chats=False,
+                can_restrict_members=False,
+                can_change_info=False,
+                can_invite_users=False,
+                can_pin_messages=False,
+                can_promote_members=False,
+            )
+        )
 
         # Delete all messages
         try:
@@ -113,9 +127,9 @@ async def handle_callback(client, callback_query: CallbackQuery):
                 except Exception as e:
                     print(f"Failed to delete message {msg.id}: {e}")
                     continue
-            await callback_query.message.edit("✅ Successfully deleted all messages.")
+            await callback_query.answer("All messages deleted successfully.", show_alert=False)
         except Exception as e:
-            await callback_query.message.edit(f"❌ Error during deletion: {str(e)}")
+            await callback_query.message.edit(f"An error occurred: {e}")
 
     elif callback_query.data == "deleteall_no":
-        await callback_query.message.edit("❌ Delete all operation canceled.")
+        await callback_query.message.edit("Delete all process canceled.")
