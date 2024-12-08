@@ -59,7 +59,7 @@ async def callback_handler(client, callback_query):
 
         if callback_query.data == "approve_unbanall":
             # If approved, start the unban process
-            await callback_query.message.edit_text("ᴜɴʙᴀɴᴀʟʟ ꜱᴛᴀʀᴛɪɴɢ ...")
+            await callback_query.message.edit_text("<b>ᴜɴʙᴀɴᴀʟʟ ꜱᴛᴀʀᴛɪɴɢ ...</b>")
 
             bot = await client.get_chat_member(chat_id, client.me.id)
             bot_permission = bot.privileges.can_restrict_members
@@ -78,13 +78,13 @@ async def callback_handler(client, callback_query):
                     f"<u><b>⬤ ᴜɴʙᴀɴ ᴄᴏᴍᴘʟᴇᴛᴇᴅ!</u></b>\n\n<b>● ᴛᴏᴛᴀʟ ᴜsᴇʀs ➠</b> {unban_count}\n<b>● ᴜɴʙᴀɴɴᴇᴅ ʙʏ ➠</b> {approver_name}"
                 )
             else:
-                await callback_query.message.edit_text("I don't have the right to unban users or you are not in sudo users.")
+                await callback_query.message.edit_text("ɪ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴛʜᴇ ʀɪɢʜᴛ ᴛᴏ ᴜɴʙᴀɴ ᴜsᴇʀs ᴏʀ ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ɪɴ sᴜᴅᴏ ᴜsᴇʀs.")
         elif callback_query.data == "decline_unbanall":
             # If declined, send a cancellation message
             await callback_query.message.edit_text("ᴜʙᴀɴᴀʟʟ ᴄᴏᴍᴍᴀɴᴅ ᴡᴀs ᴅᴇᴄʟɪɴᴇᴅ.")
     else:
         # If an unauthorized user tries to click the button
-        await callback_query.answer("You are not authorized to approve or decline this action.", show_alert=True)
+        await callback_query.answer("ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀᴜᴛʜᴏʀɪᴢᴇᴅ ᴛᴏ ᴀᴘᴘʀᴏᴠᴇ ᴏʀ ᴅᴇᴄʟɪɴᴇ ᴛʜɪs ᴀᴄᴛɪᴏɴ.", show_alert=True)
 
 # ------------------------------------------------ #
 
@@ -163,11 +163,11 @@ async def mute_all_users(client, message):
     # Send confirmation message with buttons
     buttons = InlineKeyboardMarkup(
         [[
-            InlineKeyboardButton("Approve", callback_data="approve_mute"),
-            InlineKeyboardButton("Decline", callback_data="decline_mute")
+            InlineKeyboardButton("ᴀᴘᴘʀᴏᴠᴇ", callback_data="approve_mute"),
+            InlineKeyboardButton("ᴅᴇᴄʟɪɴᴇ", callback_data="decline_mute")
         ]]
     )
-    await message.reply_text("Do you really want to mute all members?", reply_markup=buttons)
+    await message.reply_text("ᴅᴏ ʏᴏᴜ ʀᴇᴀʟʟʏ ᴡᴀɴᴛ ᴛᴏ ᴍᴜᴛᴇ ᴀʟʟ ᴍᴇᴍʙᴇʀs?", reply_markup=buttons)
 
 
 # Callback for Mute All Approval
@@ -181,16 +181,16 @@ async def approve_mute(client, callback_query: CallbackQuery):
     if issuer.id != OWNER_ID:
         issuer_member = await client.get_chat_member(chat_id, issuer.id)
         if issuer_member.status != ChatMemberStatus.OWNER:
-            await callback_query.answer("Only the bot owner or the group owner can approve this.", show_alert=True)
+            await callback_query.answer("ᴏɴʟʏ ᴛʜᴇ ʙᴏᴛ ᴏᴡɴᴇʀ ᴏʀ ᴛʜᴇ ɢʀᴏᴜᴘ ᴏᴡɴᴇʀ ᴄᴀɴ ᴀᴘᴘʀᴏᴠᴇ ᴛʜɪs.", show_alert=True)
             return
 
     # Mute all non-admin members
     bot = await client.get_chat_member(chat_id, client.me.id)
     if not bot.privileges.can_restrict_members:
-        await message.edit_text("I don't have the permission to mute users.")
+        await message.edit_text("ɪ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴛʜᴇ ᴘᴇʀᴍɪssɪᴏɴ ᴛᴏ ᴍᴜᴛᴇ ᴜsᴇʀs.")
         return
 
-    starting_message = await message.edit_text("ᴍᴜᴛᴇᴀʟʟ sᴛᴀʀᴛɪɴɢ . . .")
+    starting_message = await message.edit_text("<b>ᴍᴜᴛᴇᴀʟʟ sᴛᴀʀᴛɪɴɢ . . .</b>")
     muted_count = 0
 
     async for member in client.get_chat_members(chat_id):
@@ -205,12 +205,89 @@ async def approve_mute(client, callback_query: CallbackQuery):
             except Exception as e:
                 await message.reply_text(f"Failed to mute {member.user.first_name}: {str(e)}")
 
-    await starting_message.edit_text(f"Muted {muted_count} non-admin members successfully.")
+    await starting_message.edit_text(f"ᴍᴜᴛᴇᴅ {muted_count} ɴᴏɴ-ᴀᴅᴍɪɴ ᴍᴇᴍʙᴇʀs sᴜᴄᴄᴇssғᴜʟʟʏ.")
     await callback_query.answer()
 
 
 # Callback for Decline
 @app.on_callback_query(filters.regex("decline_mute"))
 async def decline_mute(client, callback_query: CallbackQuery):
-    await callback_query.message.edit_text("Mute operation has been declined.")
+    await callback_query.message.edit_text("ᴍᴜᴛᴇ ᴏᴘᴇʀᴀᴛɪᴏɴ ʜᴀs ʙᴇᴇɴ ᴅᴇᴄʟɪɴᴇᴅ.")
+    await callback_query.answer()
+
+# ------------------------------------------------ #
+
+@app.on_message(filters.command(["unmuteall"], prefixes=["/", "!", ".", ","]))
+async def unmute_all_users(client, message):
+    chat_id = message.chat.id
+    issuer = message.from_user  # The user issuing the unmute command
+
+    # Ensure the user issuing the command is either the bot owner or the group owner
+    if issuer.id != OWNER_ID:
+        issuer_member = await client.get_chat_member(chat_id, issuer.id)
+        if issuer_member.status != ChatMemberStatus.OWNER:
+            await message.reply_text("ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀᴜᴛʜᴏʀɪᴢᴇᴅ ᴛᴏ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ. ᴏɴʟʏ ᴛʜᴇ ɢʀᴏᴜᴘ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs.")
+            return
+
+    # Send confirmation message with buttons
+    buttons = InlineKeyboardMarkup(
+        [[
+            InlineKeyboardButton("ᴀᴘᴘʀᴏᴠᴇ", callback_data="approve_unmute"),
+            InlineKeyboardButton("ᴅᴇᴄʟɪɴᴇ", callback_data="decline_unmute")
+        ]]
+    )
+    await message.reply_text("ᴅᴏ ʏᴏᴜ ʀᴇᴀʟʟʏ ᴡᴀɴᴛ ᴛᴏ ᴜɴᴍᴜᴛᴇ ᴀʟʟ ᴍᴇᴍʙᴇʀs?", reply_markup=buttons)
+
+
+# Callback for Unmute All Approval
+@app.on_callback_query(filters.regex("approve_unmute"))
+async def approve_unmute(client, callback_query: CallbackQuery):
+    message = callback_query.message
+    chat_id = message.chat.id
+
+    # Check if user has the right to approve
+    issuer = callback_query.from_user
+    if issuer.id != OWNER_ID:
+        issuer_member = await client.get_chat_member(chat_id, issuer.id)
+        if issuer_member.status != ChatMemberStatus.OWNER:
+            await callback_query.answer("ᴏɴʟʏ ᴛʜᴇ ɢʀᴏᴜᴘ ᴏᴡɴᴇʀ ᴄᴀɴ ᴀᴘᴘʀᴏᴠᴇ ᴛʜɪs.", show_alert=True)
+            return
+
+    # Unmute all non-admin members
+    bot = await client.get_chat_member(chat_id, client.me.id)
+    if not bot.privileges.can_restrict_members:
+        await message.edit_text("ɪ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴛʜᴇ ᴘᴇʀᴍɪssɪᴏɴ ᴛᴏ ᴜɴᴍᴜᴛᴇ ᴜsᴇʀs.")
+        return
+
+    starting_message = await message.edit_text("<b>ᴜɴᴍᴜᴛᴇᴀʟʟ sᴛᴀʀᴛɪɴɢ . . .</b>")
+    unmuted_count = 0
+
+    async for member in client.get_chat_members(chat_id):
+        if member.status not in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
+            try:
+                await client.restrict_chat_member(
+                    chat_id,
+                    member.user.id,
+                    permissions=ChatPermissions(
+                        can_send_messages=True,
+                        can_send_media_messages=True,
+                        can_send_polls=True,
+                        can_add_web_page_previews=True,
+                        can_change_info=True,
+                        can_invite_users=True,
+                        can_pin_messages=True
+                    )
+                )
+                unmuted_count += 1
+            except Exception as e:
+                await message.reply_text(f"Failed to unmute {member.user.first_name}: {str(e)}")
+
+    await starting_message.edit_text(f"ᴜɴᴍᴜᴛᴇᴇᴅ {unmuted_count} ɴᴏɴ-ᴀᴅᴍɪɴ ᴍᴇᴍʙᴇʀs sᴜᴄᴄᴇssғᴜʟʟʏ.")
+    await callback_query.answer()
+
+
+# Callback for Decline
+@app.on_callback_query(filters.regex("decline_unmute"))
+async def decline_unmute(client, callback_query: CallbackQuery):
+    await callback_query.message.edit_text("ᴜɴᴍᴜᴛᴇ ᴏᴘᴇʀᴀᴛɪᴏɴ ʜᴀs ʙᴇᴇɴ ᴅᴇᴄʟɪɴᴇᴅ.")
     await callback_query.answer()
