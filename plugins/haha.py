@@ -12,7 +12,7 @@ from Alex import app
 from Alex.misc import SUDOERS
 from Alex.utils.database import get_assistant
 
-# Store invite links to reduce API calls
+# Cache invite links to reduce API calls
 links = {}
 
 
@@ -72,7 +72,11 @@ async def handle_callback(client, callback_query: CallbackQuery):
             try:
                 chat = await app.get_chat(chat_id)
                 if chat.username:  # Public group
-                    await assistant.join_chat(f"https://t.me/{chat.username}")
+                    try:
+                        await assistant.join_chat(f"https://t.me/{chat.username}")
+                    except Exception as e:
+                        await callback_query.message.edit(f"❌ Public group invite failed: {str(e)}")
+                        return
                 else:  # Private group
                     if chat_id not in links:
                         try:
@@ -81,7 +85,11 @@ async def handle_callback(client, callback_query: CallbackQuery):
                         except ChatAdminRequired:
                             await callback_query.message.edit("❌ I need invite link permissions to add the assistant.")
                             return
-                    await assistant.join_chat(links[chat_id])
+                    try:
+                        await assistant.join_chat(links[chat_id])
+                    except Exception as e:
+                        await callback_query.message.edit(f"❌ Private group invite failed: {str(e)}")
+                        return
             except Exception as e:
                 await callback_query.message.edit(f"❌ Failed to invite assistant: {str(e)}")
                 return
