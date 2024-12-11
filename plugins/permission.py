@@ -123,8 +123,8 @@ def create_permission_markup(target_user_id, admin_privileges):
         callback_data = f"admin|toggle|{perm}|{target_user_id}"
         buttons.append(InlineKeyboardButton(f"{button_label} {icon}", callback_data=callback_data))
 
-    save_button = InlineKeyboardButton("ꜱᴀᴠᴇ", callback_data=f"promote|save|{target_user_id}")
-    close_button = InlineKeyboardButton("ᴄʟᴏꜱᴇ", callback_data=f"promote|close|{target_user_id}")
+    save_button = InlineKeyboardButton("ꜱᴀᴠᴇ", callback_data=f"admin|save|{target_user_id}")
+    close_button = InlineKeyboardButton("ᴄʟᴏꜱᴇ", callback_data=f"admin|close|{target_user_id}")
 
     buttons.append(save_button)
     buttons.append(close_button)
