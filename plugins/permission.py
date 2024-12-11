@@ -1,7 +1,14 @@
 import logging
 from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, ChatPrivileges
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, ChatPrivileges, ChatPrivileges
+from pyrogram.errors import RPCError
 from Alex import app
+
+
+from pyrogram.types import 
+
+from Alex import app
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -259,3 +266,50 @@ async def close_permission_selection(callback_query):
 
 async def cleanup_temporary_permissions():
     pass
+
+
+
+@app.on_message(filters.command(["title"], prefixes=["!", "/", "."]) & filters.group)
+async def set_admin_title(client, message):
+    chat_id = message.chat.id
+    bot_user = await client.get_me()
+
+    try:
+        # Check if the bot has the privilege to change admin titles
+        bot_member = await client.get_chat_member(chat_id, bot_user.id)
+        if not bot_member.privileges.can_promote_members:
+            await message.reply("ɪ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴘᴇʀᴍɪꜱꜱɪᴏɴ ᴛᴏ ᴄʜᴀɴɢᴇ ᴀᴅᴍɪɴ ꜱᴛᴀᴛᴜꜱ ᴏʀ ᴛɪᴛʟᴇꜱ.")
+            return
+    except Exception as e:
+        await message.reply(f"Error retrieving bot status: {e}")
+        return
+
+    # Check if the user who sent the command has the right to promote members
+    user_member = await client.get_chat_member(chat_id, message.from_user.id)
+    if not user_member.privileges or not user_member.privileges.can_promote_members:
+        await message.reply("ʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴘᴇʀᴍɪꜱꜱɪᴏɴ ᴛᴏ ᴄʜᴀɴɢᴇ ᴀᴅᴍɪɴ ᴛɪᴛʟᴇꜱ.")
+        return
+
+    # Parse the title from the command
+    if len(message.command) < 2:
+        await message.reply("ᴘʟᴇᴀꜱᴇ ꜱᴘᴇᴄɪꜰʏ ᴀ ᴛɪᴛʟᴇ ꜰᴏʀ ᴛʜᴇ ᴀᴅᴍɪɴ.")
+        return
+
+    title = " ".join(message.command[1:])
+    if len(title) > 16:
+        await message.reply("ᴛʜᴇ ᴛɪᴛʟᴇ ᴄᴀɴ'ᴛ ʙᴇ ᴍᴏʀᴇ ᴛʜᴀɴ 16 ᴄʜᴀʀᴀᴄᴛᴇʀꜱ.")
+        return
+
+    # Check if the command is a reply to a user
+    if not message.reply_to_message:
+        await message.reply("ᴘʟᴇᴀꜱᴇ ʀᴇᴘʟʏ ᴛᴏ ᴀɴ ᴀᴅᴍɪɴ ᴛᴏ ꜱᴇᴛ ᴛʜᴇɪʀ ᴛɪᴛʟᴇ.")
+        return
+
+    target_user_id = message.reply_to_message.from_user.id
+
+    try:
+        # Set the admin's custom title
+        await client.set_administrator_title(chat_id, target_user_id, title)
+        await message.reply(f"✅ ᴛɪᴛʟᴇ ᴄʜᴀɴɢᴇᴅ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴛᴏ: <b>{title}</b>")
+    except RPCError as e:
+        await message.reply(f"ꜰᴀɪʟᴇᴅ ᴛᴏ ꜱᴇᴛ ᴛɪᴛʟᴇ: {str(e)}")
