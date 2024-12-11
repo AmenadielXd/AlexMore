@@ -213,8 +213,6 @@ async def toggle_permission(callback_query: CallbackQuery, target_user_id: int, 
     # Edit the message to reflect updated permissions
     await callback_query.message.edit_reply_markup(reply_markup=markup)
     await callback_query.answer("Permission toggled!")
-    else:
-        await callback_query.answer("No permissions found for this user.", show_alert=True)
 
 async def get_chat_privileges(callback_query):
     user_member = await callback_query._client.get_chat_member(callback_query.message.chat.id, callback_query.from_user.id)
