@@ -113,7 +113,7 @@ async def create_permission_markup(target_user_id, bot_privileges, callback_quer
     buttons = []
     button_names = {
         "can_change_info": "ᴄʜᴀɴɢᴇ ɢʀᴏᴜᴘ ɪɴꜰᴏ",
-        "can_invite_users": "ɪɴᴠɪᴛᴇ ᴜꜱᴇʀ'ꜱ ᴠɪᴇᴡ ʟɪɴᴋ",
+        "can_invite_users": "ɪɴᴠɪᴛᴇ ᴜꜱᴇʀꜱ",
         "can_delete_messages": "ᴅᴇʟᴇᴛᴇ ᴍᴇꜱꜱᴀɢᴇꜱ",
         "can_restrict_members": "ʙᴀɴ ᴜꜱᴇʀꜱ",
         "can_pin_messages": "ᴘɪɴ ᴍᴇꜱꜱᴀɢᴇꜱ",
@@ -128,7 +128,7 @@ async def create_permission_markup(target_user_id, bot_privileges, callback_quer
 
     for perm, state in temporary_permissions[target_user_id].items():
         # Check if bot has the permission to grant this privilege
-        bot_can_grant = getattr(bot_privileges, perm, False)  # Use bot_privileges to check bot's permissions
+        bot_can_grant = getattr(bot_privileges, perm, False)
 
         # Check if the admin performing the action has the privilege to toggle this permission
         admin_can_grant = getattr(admin_privileges, perm, False)
