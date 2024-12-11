@@ -10,6 +10,77 @@ temporary_permissions = {}
 temporary_messages = {}
 
 @app.on_message(filters.command('promote') & filters.group)
+async def promote_user(client, message):
+    chat_id = message.chat.id
+    bot_user = await client.get_me()
+
+    try:
+        bot_member = await client.get_chat_member(chat_id, bot_user.id)
+        if not bot_member.privileges.can_promote_members:
+            await client.send_message(chat_id, "ɪ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴘᴇʀᴍɪꜱꜱɪᴏɴ ᴛᴏ ᴘʀᴏᴍᴏᴛᴇ ᴍᴇᴍᴇʙᴇʀꜱ.")
+            return
+    except Exception as e:
+        await client.send_message(chat_id, f"Error retrieving bot status: {e}")
+        logger.error(f"Error retrieving bot status: {e}")
+        return
+
+    user_member = await client.get_chat_member(chat_id, message.from_user.id)
+
+    if not user_member.privileges:
+        await client.send_message(chat_id, "ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀɴ ᴀᴅᴍɪɴ.")
+        return
+
+    if not user_member.privileges.can_promote_members:
+        await client.send_message(chat_id, "ʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴀᴅᴅ ᴀᴅᴍɪɴ ʀɪɢʜᴛ.")
+        return
+
+    target_user_id = await get_target_user_id(client, chat_id, message)
+    if target_user_id is None:
+        return
+
+    if target_user_id not in temporary_permissions:
+        temporary_permissions[target_user_id] = initialize_permissions(bot_member.privileges)
+
+    markup = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🕹 ᴘᴇʀᴍɪꜱꜱɪᴏɴꜱ", callback_data=f"promote|permissions|{target_user_id}"),
+         InlineKeyboardButton("ᴄʟᴏꜱᴇ", callback_data=f"promote|close|{target_user_id}")]
+    ])
+
+    await client.send_message(chat_id, "Select an option:", reply_markup=markup)
+
+async def get_target_user_id(client, chat_id, message):
+    if message.reply_to_message:
+        return message.reply_to_message.from_user.id
+
+    if len(message.command) > 1:
+        target_identifier = message.command[1]
+        if target_identifier.isdigit():
+            return int(target_identifier)
+
+        try:
+            target_user = await client.get_chat_member(chat_id, target_identifier.replace('@', ''))
+            return target_user.user.id
+        except Exception:
+            await client.send_message(chat_id, "ᴜꜱᴇʀ ɴᴏᴛ ꜰᴏᴜɴᴅ ᴏʀ ɴᴏᴛ ᴀ ᴍᴇᴍʙᴇʀ ᴏꜰ ᴛʜɪꜱ ɢʀᴏᴜᴘ.")
+            logger.warning(f"User not found for identifier: {target_identifier}")
+            return None
+    else:
+        await client.send_message(chat_id, "ᴘʟᴇᴀꜱᴇ ꜱᴘᴇᴄɪꜰʏ ᴀ ᴜꜱᴇʀ ᴛᴏ ᴘʀᴏᴍᴏᴛᴇ ʙʏ ᴜꜱᴇʀɴᴀᴍᴇ, ᴜꜱᴇʀ ɪᴅ, ᴏʀ ʀᴇᴘʟʏɪɴɢ ᴛᴏ ᴛʜᴇɪʀ ᴍᴇꜱꜱᴀɢᴇ..")
+        return None
+
+def initialize_permissions(bot_privileges):
+    return {
+        "can_change_info": False,
+        "can_invite_users": False,
+        "can_delete_messages": False,
+        "can_restrict_members": False,
+        "can_pin_messages": False,
+        "can_promote_members": False,
+        "can_manage_chat": False,
+        "can_manage_video_chats": False,
+    }
+
+@app.on_callback_query(filters.regex(r"promote\|permissions\|"))
 async def show_permissions(client, callback_query: CallbackQuery):
     user_member = await client.get_chat_member(callback_query.message.chat.id, callback_query.from_user.id)
 
@@ -24,12 +95,7 @@ async def show_permissions(client, callback_query: CallbackQuery):
     target_user_name = target_member.user.first_name or target_member.user.username or "User"
     group_name = (await client.get_chat(chat_id)).title
 
-    # Fetch the bot's privileges
-    bot_user = await client.get_me()
-    bot_member = await client.get_chat_member(chat_id, bot_user.id)
-    bot_privileges = bot_member.privileges  # Get the bot's privileges
-
-    markup = create_permission_markup(target_user_id, bot_privileges)
+    markup = create_permission_markup(target_user_id, await get_chat_privileges(callback_query))
 
     await callback_query.message.edit_text(
         f"👤 {target_user_name} [{target_user_id}]\n👥 {group_name}",
@@ -37,7 +103,7 @@ async def show_permissions(client, callback_query: CallbackQuery):
     )
     await callback_query.answer()
 
-def create_permission_markup(target_user_id, bot_privileges):
+def create_permission_markup(target_user_id, admin_privileges):
     buttons = []
     button_names = {
         "can_change_info": "ᴄʜᴀɴɢᴇ ɢʀᴏᴜᴘ ɪɴꜰᴏ",
