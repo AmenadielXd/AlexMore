@@ -120,7 +120,7 @@ def create_permission_markup(target_user_id, admin_privileges):
         can_grant = getattr(admin_privileges, perm, False)
         icon = "🔒" if not can_grant else "✅" if state else "❌"
         button_label = button_names.get(perm, perm.replace('can_', '').replace('_', ' ').capitalize())
-        callback_data = f"promote|toggle|{perm}|{target_user_id}"
+        callback_data = f"admin|toggle|{perm}|{target_user_id}"
         buttons.append(InlineKeyboardButton(f"{button_label} {icon}", callback_data=callback_data))
 
     save_button = InlineKeyboardButton("ꜱᴀᴠᴇ", callback_data=f"promote|save|{target_user_id}")
