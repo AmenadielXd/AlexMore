@@ -100,7 +100,8 @@ async def show_permissions(client, callback_query: CallbackQuery):
     bot_member = await client.get_chat_member(chat_id, bot_user.id)
     bot_privileges = bot_member.privileges  # Get the bot's privileges
 
-    markup = create_permission_markup(target_user_id, bot_privileges)
+    # Pass the callback_query as the third argument
+    markup = await create_permission_markup(target_user_id, bot_privileges, callback_query)
 
     await callback_query.message.edit_text(
         f"👤 {target_user_name} [{target_user_id}]\n👥 {group_name}",
