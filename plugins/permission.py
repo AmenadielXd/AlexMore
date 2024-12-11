@@ -84,19 +84,33 @@ def initialize_permissions(bot_privileges):
 async def show_permissions(client, callback_query: CallbackQuery):
     user_member = await client.get_chat_member(callback_query.message.chat.id, callback_query.from_user.id)
 
+    # Check if user has the privilege to promote members
     if not user_member.privileges or not user_member.privileges.can_promote_members:
         await callback_query.answer("ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀɴ ᴀᴅᴍɪɴ ᴏʀ ʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴜꜱᴇʀ ᴘʀᴏᴍᴏᴛɪɴɢ ʀɪɢʜᴛ.", show_alert=True)
         return
 
+    # Extract target user ID from callback data
     target_user_id = int(callback_query.data.split("|")[-1])
     chat_id = callback_query.message.chat.id
 
+    # Fetch the bot's privileges in the chat
+    bot_user = await client.get_me()
+    bot_member = await client.get_chat_member(chat_id, bot_user.id)
+    bot_privileges = bot_member.privileges  # This is what was missing before
+
+    # Fetch target user's member info
     target_member = await client.get_chat_member(chat_id, target_user_id)
     target_user_name = target_member.user.first_name or target_member.user.username or "User"
     group_name = (await client.get_chat(chat_id)).title
 
-    markup = create_permission_markup(target_user_id, await get_chat_privileges(callback_query))
+    # Call create_permission_markup with all 3 arguments
+    markup = create_permission_markup(
+        target_user_id, 
+        await get_chat_privileges(callback_query), 
+        bot_privileges  # Ensure this is passed
+    )
 
+    # Edit the message to show permissions
     await callback_query.message.edit_text(
         f"👤 {target_user_name} [{target_user_id}]\n👥 {group_name}",
         reply_markup=markup
