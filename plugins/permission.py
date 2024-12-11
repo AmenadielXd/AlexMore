@@ -121,7 +121,7 @@ def create_permission_markup(target_user_id, admin_privileges):
         bot_can_grant = getattr(admin_privileges, perm, False)
 
         # Check if the admin performing the action has the privilege to toggle this permission
-        admin_can_grant = admin_privileges.get(perm, False)
+        admin_can_grant = getattr(admin_privileges, perm, False)
 
         # Determine the icon based on conditions
         if not bot_can_grant:
