@@ -84,73 +84,59 @@ def initialize_permissions(bot_privileges):
 async def show_permissions(client, callback_query: CallbackQuery):
     user_member = await client.get_chat_member(callback_query.message.chat.id, callback_query.from_user.id)
 
-    # Check if user has the privilege to promote members
     if not user_member.privileges or not user_member.privileges.can_promote_members:
         await callback_query.answer("ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀɴ ᴀᴅᴍɪɴ ᴏʀ ʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴜꜱᴇʀ ᴘʀᴏᴍᴏᴛɪɴɢ ʀɪɢʜᴛ.", show_alert=True)
         return
 
-    # Extract target user ID from callback data
     target_user_id = int(callback_query.data.split("|")[-1])
     chat_id = callback_query.message.chat.id
 
-    # Fetch the bot's privileges in the chat
-    bot_user = await client.get_me()
-    bot_member = await client.get_chat_member(chat_id, bot_user.id)
-    bot_privileges = bot_member.privileges  # This is what was missing before
-
-    # Fetch target user's member info
     target_member = await client.get_chat_member(chat_id, target_user_id)
     target_user_name = target_member.user.first_name or target_member.user.username or "User"
     group_name = (await client.get_chat(chat_id)).title
 
-    # Call create_permission_markup with all 3 arguments
-    markup = create_permission_markup(
-        target_user_id, 
-        await get_chat_privileges(callback_query), 
-        bot_privileges  # Ensure this is passed
-    )
+    markup = create_permission_markup(target_user_id, await get_chat_privileges(callback_query))
 
-    # Edit the message to show permissions
     await callback_query.message.edit_text(
         f"👤 {target_user_name} [{target_user_id}]\n👥 {group_name}",
         reply_markup=markup
     )
     await callback_query.answer()
 
-def create_permission_markup(target_user_id, admin_privileges, bot_privileges):
+def create_permission_markup(target_user_id, admin_privileges):
     buttons = []
     button_names = {
         "can_change_info": "ᴄʜᴀɴɢᴇ ɢʀᴏᴜᴘ ɪɴꜰᴏ",
-        "can_invite_users": "ɪɴᴠɪᴛᴇ ᴜꜱᴇʀꜱ",
+        "can_invite_users": "ɪɴᴠɪᴛᴇ ᴜꜱᴇʀ'ꜱ ᴠɪᴇᴡ ʟɪɴᴋ",
         "can_delete_messages": "ᴅᴇʟᴇᴛᴇ ᴍᴇꜱꜱᴀɢᴇꜱ",
         "can_restrict_members": "ʙᴀɴ ᴜꜱᴇʀꜱ",
         "can_pin_messages": "ᴘɪɴ ᴍᴇꜱꜱᴀɢᴇꜱ",
-        "can_promote_members": "ᴀᴅᴅ ɴᴇᴡ ᴀᴅᴍɪɴꜱ",
+        "can_promote_members": "ᴀᴅᴅ ɴᴇᴡ ᴍᴇᴍʙᴇʀꜱ",
         "can_manage_chat": "ᴍᴀɴᴀɢᴇ ꜱᴛᴏʀɪᴇꜱ",
         "can_manage_video_chats": "ᴍᴀɴᴀɢᴇ ʟɪᴠᴇ ꜱᴛʀᴇᴀᴍꜱ",
     }
 
     for perm, state in temporary_permissions[target_user_id].items():
-        # Check if bot has the permission to grant this privilege
-        bot_can_grant = getattr(bot_privileges, perm, False)  # Use bot_privileges to check bot's permissions
+    # Check if bot has the permission to grant this privilege
+    bot_can_grant = getattr(bot_privileges, perm, False)  # Use bot_privileges to check bot's permissions
 
-        # Check if the admin performing the action has the privilege to toggle this permission
-        admin_can_grant = getattr(admin_privileges, perm, False)
+    # Check if the admin performing the action has the privilege to toggle this permission
+    admin_can_grant = getattr(admin_privileges, perm, False)
 
-        # Determine the icon based on conditions
-        if not bot_can_grant:
-            icon = "🔐"  # Bot lacks permission
-        elif not admin_can_grant:
-            icon = "🔒"  # Admin lacks permission
-        elif state:
-            icon = "✅"  # Permission is enabled
-        else:
-            icon = "❌"  # Permission is disabled
+    # Determine the icon based on conditions
+    if not bot_can_grant:
+        icon = "🔐"  # Bot lacks permission
+    elif not admin_can_grant:
+        icon = "🔒"  # Admin lacks permission
+    elif state:
+        icon = "✅"  # Permission is enabled
+    else:
+        icon = "❌"  # Permission is disabled
 
-        # Button label
-        button_label = button_names.get(perm, perm.replace('can_', '').replace('_', ' ').capitalize())
-        callback_data = f"promote|toggle|{perm}|{target_user_id}"
-        buttons.append(InlineKeyboardButton(f"{button_label} {icon}", callback_data=callback_data))
+    # Button label
+    button_label = button_names.get(perm, perm.replace('can_', '').replace('_', ' ').capitalize())
+    callback_data = f"promote|toggle|{perm}|{target_user_id}"
+    buttons.append(InlineKeyboardButton(f"{button_label} {icon}", callback_data=callback_data))
 
     # Add save and close buttons
     save_button = InlineKeyboardButton("ꜱᴀᴠᴇ", callback_data=f"promote|save|{target_user_id}")
@@ -186,33 +172,16 @@ async def handle_permission_toggle(client, callback_query: CallbackQuery):
     elif action == "close":
         await close_permission_selection(callback_query)
 
-async def toggle_permission(callback_query: CallbackQuery, target_user_id: int, permission: str):
-    chat_id = callback_query.message.chat.id
+async def toggle_permission(callback_query, target_user_id, perm_code):
+    if target_user_id in temporary_permissions:
+        permissions_dict = temporary_permissions[target_user_id]
+        permissions_dict[perm_code] = not permissions_dict[perm_code]
 
-    # Get bot's privileges
-    bot_user = await callback_query._client.get_me()
-    bot_member = await callback_query._client.get_chat_member(chat_id, bot_user.id)
-    bot_privileges = bot_member.privileges  # Ensure bot_privileges is fetched here
-
-    # Get admin privileges (for the admin triggering the action)
-    admin_privileges = await get_chat_privileges(callback_query)
-
-    # Toggle the target user's permission
-    target_member = await callback_query._client.get_chat_member(chat_id, target_user_id)
-    if target_member.privileges:
-        current_privileges = target_member.privileges
-        setattr(current_privileges, permission, not getattr(current_privileges, permission, False))
-        await callback_query._client.promote_chat_member(chat_id, target_user_id, current_privileges)
+        markup = create_permission_markup(target_user_id, await get_chat_privileges(callback_query))
+        await callback_query.message.edit_reply_markup(markup)
+        await callback_query.answer(f"{perm_code.replace('can_', '').replace('_', ' ').capitalize()} ")
     else:
-        await callback_query.answer("This user is not an admin.", show_alert=True)
-        return
-
-    # Create updated permission markup
-    markup = create_permission_markup(target_user_id, admin_privileges, bot_privileges)  # Pass bot_privileges here
-
-    # Edit the message to reflect updated permissions
-    await callback_query.message.edit_reply_markup(reply_markup=markup)
-    await callback_query.answer("Permission toggled!")
+        await callback_query.answer("No permissions found for this user.", show_alert=True)
 
 async def get_chat_privileges(callback_query):
     user_member = await callback_query._client.get_chat_member(callback_query.message.chat.id, callback_query.from_user.id)
