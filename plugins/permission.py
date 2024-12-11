@@ -108,7 +108,7 @@ async def show_permissions(client, callback_query: CallbackQuery):
     )
     await callback_query.answer()
 
-def create_permission_markup(target_user_id, bot_privileges):
+def create_permission_markup(target_user_id, bot_privileges, callback_query):
     buttons = []
     button_names = {
         "can_change_info": "ᴄʜᴀɴɢᴇ ɢʀᴏᴜᴘ ɪɴꜰᴏ",
@@ -120,6 +120,10 @@ def create_permission_markup(target_user_id, bot_privileges):
         "can_manage_chat": "ᴍᴀɴᴀɢᴇ ꜱᴛᴏʀɪᴇꜱ",
         "can_manage_video_chats": "ᴍᴀɴᴀɢᴇ ʟɪᴠᴇ ꜱᴛʀᴇᴀᴍꜱ",
     }
+
+    # Retrieve the admin's privileges
+    admin_member = await callback_query._client.get_chat_member(callback_query.message.chat.id, callback_query.from_user.id)
+    admin_privileges = admin_member.privileges
 
     for perm, state in temporary_permissions[target_user_id].items():
         # Check if bot has the permission to grant this privilege
