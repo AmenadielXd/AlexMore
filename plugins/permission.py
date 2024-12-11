@@ -183,15 +183,40 @@ async def handle_permission_toggle(client, callback_query: CallbackQuery):
         await close_permission_selection(callback_query)
 
 async def toggle_permission(callback_query, target_user_id, perm_code):
+    chat_id = callback_query.message.chat.id
+    client = callback_query._client
+
+    # Fetch bot and admin privileges
+    bot_member = await client.get_chat_member(chat_id, client.me.id)
+    admin_member = await client.get_chat_member(chat_id, callback_query.from_user.id)
+
+    bot_privileges = bot_member.privileges
+    admin_privileges = admin_member.privileges
+
+    # Check if bot has the permission
+    bot_can_grant = getattr(bot_privileges, perm_code, False)
+
+    # Check if admin has the permission
+    admin_can_grant = getattr(admin_privileges, perm_code, False)
+
+    # Handle different cases for icons
+    if not bot_can_grant:
+        await callback_query.answer("I don't have this permission.", show_alert=True)
+        return
+
+    if not admin_can_grant:
+        await callback_query.answer("You don't have this permission.", show_alert=True)
+        return
+
+    # Toggle the permission for the user
     if target_user_id in temporary_permissions:
         permissions_dict = temporary_permissions[target_user_id]
         permissions_dict[perm_code] = not permissions_dict[perm_code]
 
-        # Pass the callback_query as the third argument
-        markup = await create_permission_markup(target_user_id, await get_chat_privileges(callback_query), callback_query)
-        
+        # Refresh the markup with updated icons
+        markup = await create_permission_markup(target_user_id, bot_privileges, callback_query)
         await callback_query.message.edit_reply_markup(markup)
-        await callback_query.answer(f"{perm_code.replace('can_', '').replace('_', ' ').capitalize()} ")
+        await callback_query.answer(f"{perm_code.replace('can_', '').replace('_', ' ').capitalize()} toggled.")
     else:
         await callback_query.answer("No permissions found for this user.", show_alert=True)
 
