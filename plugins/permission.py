@@ -4,12 +4,7 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQ
 from pyrogram.errors import RPCError
 from Alex import app
 
-
-from pyrogram.types import 
-
-from Alex import app
-
-
+# manually adminstrator
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -267,8 +262,7 @@ async def close_permission_selection(callback_query):
 async def cleanup_temporary_permissions():
     pass
 
-
-
+# set title
 @app.on_message(filters.command(["title"], prefixes=["!", "/", "."]) & filters.group)
 async def set_admin_title(client, message):
     chat_id = message.chat.id
