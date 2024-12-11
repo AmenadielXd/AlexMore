@@ -103,7 +103,7 @@ async def show_permissions(client, callback_query: CallbackQuery):
     )
     await callback_query.answer()
 
-def create_permission_markup(target_user_id, admin_privileges):
+def create_permission_markup(target_user_id, admin_privileges, bot_privileges):
     buttons = []
     button_names = {
         "can_change_info": "ᴄʜᴀɴɢᴇ ɢʀᴏᴜᴘ ɪɴꜰᴏ",
