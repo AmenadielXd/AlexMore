@@ -42,8 +42,8 @@ async def promote_user(client, message):
         temporary_permissions[target_user_id] = initialize_permissions(bot_member.privileges)
 
     markup = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🕹 ᴘᴇʀᴍɪꜱꜱɪᴏɴꜱ", callback_data=f"promote|permissions|{target_user_id}"),
-         InlineKeyboardButton("ᴄʟᴏꜱᴇ", callback_data=f"promote|close|{target_user_id}")]
+        [InlineKeyboardButton("🕹 ᴘᴇʀᴍɪꜱꜱɪᴏɴꜱ", callback_data=f"admin|permissions|{target_user_id}"),
+         InlineKeyboardButton("ᴄʟᴏꜱᴇ", callback_data=f"admin|close|{target_user_id}")]
     ])
 
     await client.send_message(chat_id, "Select an option:", reply_markup=markup)
