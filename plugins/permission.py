@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 temporary_permissions = {}
 temporary_messages = {}
 
-@app.on_message(filters.command('promote') & filters.group)
+@app.on_message(filters.command('admin') & filters.group)
 async def promote_user(client, message):
     chat_id = message.chat.id
     bot_user = await client.get_me()
@@ -19,7 +19,7 @@ async def promote_user(client, message):
     try:
         bot_member = await client.get_chat_member(chat_id, bot_user.id)
         if not bot_member.privileges.can_promote_members:
-            await client.send_message(chat_id, "ɪ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴘᴇʀᴍɪꜱꜱɪᴏɴ ᴛᴏ ᴘʀᴏᴍᴏᴛᴇ ᴍᴇᴍᴇʙᴇʀꜱ.")
+            await client.send_message(chat_id, "ɪ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴘᴇʀᴍɪꜱꜱɪᴏɴ ᴛᴏ ᴘʀᴏᴍᴏᴛᴇ ᴍᴇᴍʙᴇʀꜱ.")
             return
     except Exception as e:
         await client.send_message(chat_id, f"Error retrieving bot status: {e}")
@@ -44,8 +44,8 @@ async def promote_user(client, message):
         temporary_permissions[target_user_id] = initialize_permissions(bot_member.privileges)
 
     markup = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🕹 ᴘᴇʀᴍɪꜱꜱɪᴏɴꜱ", callback_data=f"promote|permissions|{target_user_id}"),
-         InlineKeyboardButton("ᴄʟᴏꜱᴇ", callback_data=f"promote|close|{target_user_id}")]
+        [InlineKeyboardButton("🕹 ᴘᴇʀᴍɪꜱꜱɪᴏɴꜱ", callback_data=f"admin|permissions|{target_user_id}"),
+         InlineKeyboardButton("ᴄʟᴏꜱᴇ", callback_data=f"admin|close|{target_user_id}")]
     ])
 
     await client.send_message(chat_id, "Select an option:", reply_markup=markup)
@@ -82,7 +82,7 @@ def initialize_permissions(bot_privileges):
         "can_manage_video_chats": False,
     }
 
-@app.on_callback_query(filters.regex(r"promote\|permissions\|"))
+@app.on_callback_query(filters.regex(r"admin\|permissions\|"))
 async def show_permissions(client, callback_query: CallbackQuery):
     user_member = await client.get_chat_member(callback_query.message.chat.id, callback_query.from_user.id)
 
@@ -147,12 +147,12 @@ async def create_permission_markup(target_user_id, bot_privileges, callback_quer
 
         # Button label
         button_label = button_names.get(perm, perm.replace('can_', '').replace('_', ' ').capitalize())
-        callback_data = f"promote|toggle|{perm}|{target_user_id}"
+        callback_data = f"admin|toggle|{perm}|{target_user_id}"
         buttons.append(InlineKeyboardButton(f"{button_label} {icon}", callback_data=callback_data))
 
     # Add save and close buttons
-    save_button = InlineKeyboardButton("ꜱᴀᴠᴇ", callback_data=f"promote|save|{target_user_id}")
-    close_button = InlineKeyboardButton("ᴄʟᴏꜱᴇ", callback_data=f"promote|close|{target_user_id}")
+    save_button = InlineKeyboardButton("ꜱᴀᴠᴇ", callback_data=f"admin|save|{target_user_id}")
+    close_button = InlineKeyboardButton("ᴄʟᴏꜱᴇ", callback_data=f"admin|close|{target_user_id}")
 
     # Arrange buttons in rows
     button_rows = [buttons[i:i + 1] for i in range(0, len(buttons))]
@@ -160,7 +160,7 @@ async def create_permission_markup(target_user_id, bot_privileges, callback_quer
 
     return InlineKeyboardMarkup(button_rows)
 
-@app.on_callback_query(filters.regex(r"promote\|"))
+@app.on_callback_query(filters.regex(r"admin\|"))
 async def handle_permission_toggle(client, callback_query: CallbackQuery):
     data = callback_query.data.split("|")
 
