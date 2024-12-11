@@ -95,7 +95,12 @@ async def show_permissions(client, callback_query: CallbackQuery):
     target_user_name = target_member.user.first_name or target_member.user.username or "User"
     group_name = (await client.get_chat(chat_id)).title
 
-    markup = create_permission_markup(target_user_id, await get_chat_privileges(callback_query))
+    # Fetch the bot's privileges
+    bot_user = await client.get_me()
+    bot_member = await client.get_chat_member(chat_id, bot_user.id)
+    bot_privileges = bot_member.privileges  # Get the bot's privileges
+
+    markup = create_permission_markup(target_user_id, bot_privileges)
 
     await callback_query.message.edit_text(
         f"👤 {target_user_name} [{target_user_id}]\n👥 {group_name}",
@@ -103,7 +108,7 @@ async def show_permissions(client, callback_query: CallbackQuery):
     )
     await callback_query.answer()
 
-def create_permission_markup(target_user_id, admin_privileges):
+def create_permission_markup(target_user_id, bot_privileges):
     buttons = []
     button_names = {
         "can_change_info": "ᴄʜᴀɴɢᴇ ɢʀᴏᴜᴘ ɪɴꜰᴏ",
