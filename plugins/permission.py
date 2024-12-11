@@ -310,6 +310,6 @@ async def set_admin_title(client, message):
     try:
         # Set the admin's custom title
         await client.set_administrator_title(chat_id, target_user_id, title)
-        await message.reply(f"✅ ᴛɪᴛʟᴇ ᴄʜᴀɴɢᴇᴅ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴛᴏ: <b>{title}</b>")
+        await message.reply(f"ᴛɪᴛʟᴇ ᴄʜᴀɴɢᴇᴅ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴛᴏ: <b>{title}</b>")
     except RPCError as e:
         await message.reply(f"ꜰᴀɪʟᴇᴅ ᴛᴏ ꜱᴇᴛ ᴛɪᴛʟᴇ: {str(e)}")
