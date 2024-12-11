@@ -186,14 +186,33 @@ async def handle_permission_toggle(client, callback_query: CallbackQuery):
     elif action == "close":
         await close_permission_selection(callback_query)
 
-async def toggle_permission(callback_query, target_user_id, perm_code):
-    if target_user_id in temporary_permissions:
-        permissions_dict = temporary_permissions[target_user_id]
-        permissions_dict[perm_code] = not permissions_dict[perm_code]
+async def toggle_permission(callback_query: CallbackQuery, target_user_id: int, permission: str):
+    chat_id = callback_query.message.chat.id
 
-        markup = create_permission_markup(target_user_id, await get_chat_privileges(callback_query))
-        await callback_query.message.edit_reply_markup(markup)
-        await callback_query.answer(f"{perm_code.replace('can_', '').replace('_', ' ').capitalize()} ")
+    # Get bot's privileges
+    bot_user = await callback_query._client.get_me()
+    bot_member = await callback_query._client.get_chat_member(chat_id, bot_user.id)
+    bot_privileges = bot_member.privileges  # Ensure bot_privileges is fetched here
+
+    # Get admin privileges (for the admin triggering the action)
+    admin_privileges = await get_chat_privileges(callback_query)
+
+    # Toggle the target user's permission
+    target_member = await callback_query._client.get_chat_member(chat_id, target_user_id)
+    if target_member.privileges:
+        current_privileges = target_member.privileges
+        setattr(current_privileges, permission, not getattr(current_privileges, permission, False))
+        await callback_query._client.promote_chat_member(chat_id, target_user_id, current_privileges)
+    else:
+        await callback_query.answer("This user is not an admin.", show_alert=True)
+        return
+
+    # Create updated permission markup
+    markup = create_permission_markup(target_user_id, admin_privileges, bot_privileges)  # Pass bot_privileges here
+
+    # Edit the message to reflect updated permissions
+    await callback_query.message.edit_reply_markup(reply_markup=markup)
+    await callback_query.answer("Permission toggled!")
     else:
         await callback_query.answer("No permissions found for this user.", show_alert=True)
 
