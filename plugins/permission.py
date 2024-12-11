@@ -187,7 +187,9 @@ async def toggle_permission(callback_query, target_user_id, perm_code):
         permissions_dict = temporary_permissions[target_user_id]
         permissions_dict[perm_code] = not permissions_dict[perm_code]
 
-        markup = create_permission_markup(target_user_id, await get_chat_privileges(callback_query))
+        # Pass the callback_query as the third argument
+        markup = await create_permission_markup(target_user_id, await get_chat_privileges(callback_query), callback_query)
+        
         await callback_query.message.edit_reply_markup(markup)
         await callback_query.answer(f"{perm_code.replace('can_', '').replace('_', ' ').capitalize()} ")
     else:
