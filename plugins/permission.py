@@ -117,26 +117,26 @@ def create_permission_markup(target_user_id, admin_privileges):
     }
 
     for perm, state in temporary_permissions[target_user_id].items():
-        # Check if bot has the permission to grant this privilege
-        bot_can_grant = getattr(admin_privileges, perm, False)
+    # Check if bot has the permission to grant this privilege
+    bot_can_grant = getattr(bot_privileges, perm, False)  # Use bot_privileges to check bot's permissions
 
-        # Check if the admin performing the action has the privilege to toggle this permission
-        admin_can_grant = getattr(admin_privileges, perm, False)
+    # Check if the admin performing the action has the privilege to toggle this permission
+    admin_can_grant = getattr(admin_privileges, perm, False)
 
-        # Determine the icon based on conditions
-        if not bot_can_grant:
-            icon = "🔐"  # Bot lacks permission
-        elif not admin_can_grant:
-            icon = "🔒"  # Admin lacks permission
-        elif state:
-            icon = "✅"  # Permission is enabled
-        else:
-            icon = "❌"  # Permission is disabled
+    # Determine the icon based on conditions
+    if not bot_can_grant:
+        icon = "🔐"  # Bot lacks permission
+    elif not admin_can_grant:
+        icon = "🔒"  # Admin lacks permission
+    elif state:
+        icon = "✅"  # Permission is enabled
+    else:
+        icon = "❌"  # Permission is disabled
 
-        # Button label
-        button_label = button_names.get(perm, perm.replace('can_', '').replace('_', ' ').capitalize())
-        callback_data = f"promote|toggle|{perm}|{target_user_id}"
-        buttons.append(InlineKeyboardButton(f"{button_label} {icon}", callback_data=callback_data))
+    # Button label
+    button_label = button_names.get(perm, perm.replace('can_', '').replace('_', ' ').capitalize())
+    callback_data = f"promote|toggle|{perm}|{target_user_id}"
+    buttons.append(InlineKeyboardButton(f"{button_label} {icon}", callback_data=callback_data))
 
     # Add save and close buttons
     save_button = InlineKeyboardButton("ꜱᴀᴠᴇ", callback_data=f"promote|save|{target_user_id}")
