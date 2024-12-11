@@ -184,7 +184,7 @@ async def save_permissions(client, callback_query, target_user_id):
             updated_member = await client.get_chat_member(chat_id, target_user_id)
             user_name = updated_member.user.first_name or updated_member.user.username or "User"
             await callback_query.message.delete()
-            await callback_query.answer(f"{user_name} ʜᴀꜱ ʙᴇᴇɴ ᴘʀᴏᴍᴏᴛᴇᴅ.", show_alert=True)
+            await callback_query.answer(f"{user_name} ʜᴀꜱ ʙᴇᴇɴ ᴘʀᴏᴍᴏᴛᴇᴅ.")
 
             if target_user_id in temporary_messages:
                 await temporary_messages[target_user_id].delete()
