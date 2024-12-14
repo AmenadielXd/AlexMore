@@ -22,7 +22,6 @@ from pyrogram.types import (
 )
 
 from config import BOT_USERNAME
-from Alex.__init__ import WELCOME_DELAY_KICK_SEC
 from Alex import app
 from Alex.misc import SUDOERS
 from utils.error import capture_err
@@ -162,8 +161,7 @@ async def handle_new_member(member, chat):
     await update_captcha_cache(answers_dicc)
 
     asyncio.create_task(
-        kick_restricted_after_delay(
-            WELCOME_DELAY_KICK_SEC, button_message, member
+        kick_restricted_after_delay(300, button_message, member
         )
     )
     await asyncio.sleep(0.5)
