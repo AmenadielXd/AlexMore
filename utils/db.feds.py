@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pytz
 
-from wbb import SUDOERS, db
+from Alex.misc import SUDOERS, db
 
 fedsdb = db.feds
 
