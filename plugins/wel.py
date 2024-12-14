@@ -22,10 +22,10 @@ from Alex.utils import (
     set_greetings_on,
     set_greetings_off,
 )
-from Alex.utils.error import capture_err
-from Alex.utils.functions import check_format, extract_text_and_keyb
-from Alex.utils.keyboard import ikb
-from Alex.utils.permissions import adminsOnly
+from utils.error import capture_err
+from utils.functions import check_format, extract_text_and_keyb
+from utils.keyboard import ikb
+from utils.permissions import adminsOnly
 
 
 async def handle_left_member(member, chat):
