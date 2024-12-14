@@ -52,8 +52,6 @@ from utils.functions import (
 answers_dicc = []
 loop = asyncio.get_running_loop()
 
-WELCOME_DELAY_KICK_SEC = WELCOME_DELAY_KICK_SEC
-
 
 async def get_initial_captcha_cache():
     global answers_dicc
