@@ -28,7 +28,6 @@ from utils.error import capture_err
 from utils.permissions import adminsOnly
 from utils.keyboard import ikb
 from .notes import extract_urls
-from utils.dbfeds import check_banned_user
 from Alex.utils.database import (
     captcha_off,
     captcha_on,
