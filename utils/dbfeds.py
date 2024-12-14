@@ -4,7 +4,7 @@ import pytz
 
 from Alex.misc import SUDOERS, db
 
-fedsdb = db.feds
+fedsdb = mongodb.feds
 
 
 def get_fed_info(fed_id):
