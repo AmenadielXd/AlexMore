@@ -22,7 +22,7 @@ from pyrogram.types import (
 )
 
 from config import BOT_USERNAME
-from wbb import WELCOME_DELAY_KICK_SEC
+from Alex import WELCOME_DELAY_KICK_SEC
 from Alex import app
 from Alex.misc import SUDOERS
 from utils.error import capture_err
