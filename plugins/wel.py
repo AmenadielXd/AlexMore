@@ -21,13 +21,15 @@ from pyrogram.types import (
     User,
 )
 
-from config import BOT_USERNAME, SUDOERS, WELCOME_DELAY_KICK_SEC, app
-from Alex.core.decorators.errors import capture_err
-from Alex.core.decorators.permissions import adminsOnly
+from config import BOT_USERNAME, WELCOME_DELAY_KICK_SEC
+from Alex import app
+from Alex.misc import SUDOERS
+from utils.errors import capture_err
+from utils.permissions import adminsOnly
 from utils.keyboard import ikb
-from Alex.modules.notes import extract_urls
+from .notes import extract_urls
 from wbb.utils.dbfeds import check_banned_user, get_fed_id
-from wbb.utils.dbfunctions import (
+from Alex.utils.database import (
     captcha_off,
     captcha_on,
     del_welcome,
