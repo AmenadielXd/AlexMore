@@ -21,7 +21,7 @@ from pyrogram.types import (
     User,
 )
 
-from config import BOT_USERNAME, WELCOME_DELAY_KICK_SEC
+from config import BOT_USERNAME
 from Alex import app
 from Alex.misc import SUDOERS
 from utils.errors import capture_err
@@ -83,6 +83,8 @@ Checkout /markdownhelp to know more about formattings and other syntax.
 
 answers_dicc = []
 loop = asyncio.get_running_loop()
+
+WELCOME_DELAY_KICK_SEC = WELCOME_DELAY_KICK_SEC
 
 
 async def get_initial_captcha_cache():
