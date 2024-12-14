@@ -351,16 +351,16 @@ from Alex.misc import SUDOERS
 from .notes import extract_urls
 from Alex.utils.database import is_gbanned_user
 
-from Alex.utils.welcomedb import (
+from utils.welcomedb import (
     del_welcome,
     get_welcome,
     set_welcome,
 )
 
-from Alex.utils.error import capture_err
-from Alex.utils.functions import check_format, extract_text_and_keyb
-from Alex.utils.keyboard import ikb
-from Alex.utils.permissions import adminsOnly
+from utils.error import capture_err
+from utils.functions import check_format, extract_text_and_keyb
+from utils.keyboard import ikb
+from utils.permissions import adminsOnly
 
 
 # Random welcome messages list
