@@ -24,7 +24,7 @@ from pyrogram.types import (
 from config import BOT_USERNAME
 from Alex import app
 from Alex.misc import SUDOERS
-from utils.errors import capture_err
+from utils.error import capture_err
 from utils.permissions import adminsOnly
 from utils.keyboard import ikb
 from .notes import extract_urls
