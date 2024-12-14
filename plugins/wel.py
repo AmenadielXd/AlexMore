@@ -28,7 +28,7 @@ from utils.error import capture_err
 from utils.permissions import adminsOnly
 from utils.keyboard import ikb
 from .notes import extract_urls
-from utils.dbfeds import check_banned_user, get_fed_id
+from utils.dbfeds import check_banned_user
 from Alex.utils.database import (
     captcha_off,
     captcha_on,
@@ -74,17 +74,6 @@ async def handle_new_member(member, chat):
     try:
         if member.id in SUDOERS:
             return  # Ignore sudo users
-        fed_id = await get_fed_id(chat.id)
-        if fed_id:
-            check_user = await check_banned_user(fed_id, member.id)
-            if check_user:
-                reason = check_user["reason"]
-                date = check_user["date"]
-                await chat.ban_member(member.id)
-                return await app.send_message(
-                    chat.id,
-                    f"**User {member.mention} was Fed Banned.\n\nReason: {reason}.\nDate: {date}.**",
-                )
         if await is_gbanned_user(member.id):
             await chat.ban_member(member.id)
             await app.send_message(
