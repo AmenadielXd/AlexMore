@@ -14,7 +14,7 @@ from Alex import app
 from Alex.misc import SUDOERS
 from .notes import extract_urls
 from Alex.utils.database import is_gbanned_user
-from utils import (
+from utils.dbwelcome import (
     del_goodbye,
     get_goodbye,
     set_goodbye,
