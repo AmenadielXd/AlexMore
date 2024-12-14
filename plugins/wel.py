@@ -1,76 +1,437 @@
-import asyncio
-import os
+import datetime
+import random
 from re import findall
-from datetime import datetime, timedelta
-from random import shuffle
 
 from pyrogram import filters
-from pyrogram.enums import ChatMemberStatus
-from pyrogram.errors.exceptions.bad_request_400 import (
-    ChatAdminRequired,
-    UserNotParticipant,
-)
-from pyrogram.enums import ChatMemberStatus as CMS
+from pyrogram.errors import ChatAdminRequired
 from pyrogram.types import (
     Chat,
-    ChatPermissions,
-    ChatMemberUpdated,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     Message,
-    User,
 )
-
-from config import BOT_USERNAME
 from Alex import app
 from Alex.misc import SUDOERS
-from utils.error import capture_err
-from utils.permissions import adminsOnly
-from utils.keyboard import ikb
 from .notes import extract_urls
-from Alex.utils.database import (
-    captcha_off,
-    captcha_on,
+from Alex.utils.database import is_gbanned_user
+from Alex.utils import (
+    del_goodbye,
+    get_goodbye,
+    set_goodbye,
+    is_greetings_on,
+    set_greetings_on,
+    set_greetings_off,
+)
+from Alex.utils.error import capture_err
+from Alex.utils.functions import check_format, extract_text_and_keyb
+from Alex.utils.keyboard import ikb
+from Alex.utils.permissions import adminsOnly
+
+
+async def handle_left_member(member, chat):
+
+    try:
+        if member.id in SUDOERS:
+            return
+        if await is_gbanned_user(member.id):
+            await chat.ban_member(member.id)
+            await app.send_message(
+                chat.id,
+                f"{member.mention} ᴡᴀs ɢʟᴏʙᴀʟʟʏ ʙᴀɴɴᴇᴅ, ᴀɴᴅ ɢᴏᴛ ʀᴇᴍᴏᴠᴇᴅ,"
+                + " ɪғ ʏᴏᴜ ᴛʜɪɴᴋ ᴛʜɪs ɪs ᴀ ғᴀʟsᴇ ɢʙᴀɴ, ʏᴏᴜ ᴄᴀɴ ᴀᴘᴘᴇᴀʟ"
+                + " ғᴏʀ ᴛʜɪs ʙᴀɴ ɪɴ sᴜᴘᴘᴏʀᴛ ᴄʜᴀᴛ",
+            )
+            return
+        if member.is_bot:
+            return
+        return await send_left_message(chat, member.id)
+
+    except ChatAdminRequired:
+        return
+
+
+@app.on_message(filters.left_chat_member & filters.group, group=6)
+@capture_err
+async def goodbye(_, m: Message):
+    if m.from_user:
+        member = await app.get_users(m.from_user.id)
+        chat = m.chat
+        return await handle_left_member(member, chat)
+
+
+async def send_left_message(chat: Chat, user_id: int, delete: bool = False):
+    is_on = await is_greetings_on(chat.id, "goodbye")
+
+    if not is_on:
+        return
+
+    goodbye, raw_text, file_id = await get_goodbye(chat.id)
+    print(f"Debug - Goodbye: {goodbye}, Raw Text: {raw_text}")  # Debug statement
+
+    # Agar custom goodbye message na ho toh random default message select karein
+    if not raw_text:
+        default_messages = [
+              "{NAME} will be missed.",
+    "{mention} just went offline.",
+    "{mention} has left the lobby.",
+    "{mention} has left the clan.",
+    "{mention} has left the game.",
+    "{mention} has fled the area.",
+    "{mention} is out of the running.",
+    "Nice knowing ya, {mention}!",
+    "It was a fun time {mention}.",
+    "We hope to see you again soon, {mention}.",
+    "I donut want to say goodbye, {mention}.",
+    "Goodbye {mention}! Guess who's gonna miss you :')",
+    "Goodbye {mention}! It's gonna be lonely without ya.",
+    "Please don't leave me alone in this place, {mention}!",
+    "Good luck finding better shit-posters than us, {mention}!",
+    "You know we're gonna miss you {mention}. Right? Right? Right?",
+    "Congratulations, {mention}! You're officially free of this mess.",
+    "{mention}. You were an opponent worth fighting.",
+    "You're leaving, {mention}? Yare Yare Daze.",
+    "Bring him the photo",
+    "Go outside!",
+    "Ask again later",
+    "Think for yourself",
+    "Question authority",
+    "You are worshiping a sun god",
+    "Don't leave the house today",
+    "Give up!",
+    "Marry and reproduce",
+    "Stay asleep",
+    "Wake up",
+    "Look to la luna",
+    "Steven lives",
+    "Meet strangers without prejudice",
+    "A hanged man will bring you no luck today",
+    "What do you want to do today?",
+    "You are dark inside",
+    "Have you seen the exit?",
+    "Get a baby pet it will cheer you up.",
+    "Your princess is in another castle.",
+    "You are playing it wrong give me the controller",
+    "Trust good people",
+    "Live to die.",
+    "When life gives you lemons reroll!",
+    "Well, that was worthless",
+    "I fell asleep!",
+    "May your troubles be many",
+    "Your old life lies in ruin",
+    "Always look on the bright side",
+    "It is dangerous to go alone",
+    "You will never be forgiven",
+    "You have nobody to blame but yourself",
+    "Only a sinner",
+    "Use bombs wisely",
+    "Nobody knows the troubles you have seen",
+    "You look fat you should exercise more",
+    "Follow the zebra",
+    "Why so blue?",
+    "The devil in disguise",
+    "Go outside",
+    "Always your head in the clouds",
+]
+        raw_text = random.choice(default_messages)  # Random default message choose karein
+        goodbye = "Text"  # Default ko "Text" type set karte hain
+        file_id = None
+
+    text = raw_text
+    keyb = None
+
+    if findall(r".+\,.+", raw_text):
+        text, keyb = extract_text_and_keyb(ikb, raw_text)
+
+    u = await app.get_users(user_id)
+
+    replacements = {
+        "{mention}": u.mention,
+        "{id}": f"`{user_id}`",
+        "{first}": u.first_name,
+        "{chatname}": chat.title,
+        "{last}": u.last_name or "None",
+        "{username}": u.username or "None",
+        "{date}": datetime.datetime.now().strftime("%Y-%m-%d"),
+        "{weekday}": datetime.datetime.now().strftime("%A"),
+        "{time}": datetime.datetime.now().strftime("%H:%M:%S") + " UTC",
+    }
+
+    for placeholder, value in replacements.items():
+        if placeholder in text:
+            text = text.replace(placeholder, value)
+
+    # Final send message section
+    if goodbye == "Text":
+        m = await app.send_message(
+            chat.id,
+            text=text,
+            reply_markup=keyb,
+            disable_web_page_preview=True,
+        )
+    elif goodbye == "Photo":
+        m = await app.send_photo(
+            chat.id,
+            photo=file_id,
+            caption=text,
+            reply_markup=keyb,
+        )
+    else:
+        m = await app.send_animation(
+            chat.id,
+            animation=file_id,
+            caption=text,
+            reply_markup=keyb,
+        )
+
+
+@app.on_message(filters.command("setgoodbye") & ~filters.private)
+@adminsOnly("can_change_info")
+async def set_goodbye_func(_, message):
+    usage = "Yᴏᴜ ɴᴇᴇᴅ ᴛᴏ ʀᴇᴘʟʏ ᴛᴏ ᴀ ᴛᴇxᴛ, ɢɪғ ᴏʀ ᴘʜᴏᴛᴏ ᴛᴏ sᴇᴛ ɪᴛ ᴀs ɢᴏᴏᴅʙʏᴇ ᴍᴇssᴀɢᴇ.\n\nᴏᴛᴇs: ᴄᴀᴘᴛɪᴏɴ ʀᴇǫᴜɪʀᴇᴅ ғᴏʀ ɢɪғ ᴀɴᴅ ᴘʜᴏᴛᴏ."
+    key = InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    text="More Help",
+                    url=f"t.me/{app.username}?start=greetings",
+                )
+            ],
+        ]
+    )
+    replied_message = message.reply_to_message
+    chat_id = message.chat.id
+    try:
+        if not replied_message:
+            await message.reply_text(usage, reply_markup=key)
+            return
+        if replied_message.animation:
+            goodbye = "Animation"
+            file_id = replied_message.animation.file_id
+            text = replied_message.caption
+            if not text:
+                return await message.reply_text(usage, reply_markup=key)
+            raw_text = text.markdown
+        if replied_message.photo:
+            goodbye = "Photo"
+            file_id = replied_message.photo.file_id
+            text = replied_message.caption
+            if not text:
+                return await message.reply_text(usage, reply_markup=key)
+            raw_text = text.markdown
+        if replied_message.text:
+            goodbye = "Text"
+            file_id = None
+            text = replied_message.text
+            raw_text = text.markdown
+        if replied_message.reply_markup and not findall(r"\[.+\,.+\]", raw_text):
+            urls = extract_urls(replied_message.reply_markup)
+            if urls:
+                response = "\n".join(
+                    [f"{name}=[{text}, {url}]" for name, text, url in urls]
+                )
+                raw_text = raw_text + response
+        raw_text = await check_format(ikb, raw_text)
+        if raw_text:
+            await set_goodbye(chat_id, goodbye, raw_text, file_id)
+            return await message.reply_text(
+                "ɢᴏᴏᴅʙʏᴇ ᴍᴇssᴀɢᴇ ʜᴀs ʙᴇᴇɴ sᴜᴄᴄᴇssғᴜʟʟʏ sᴇᴛ."
+            )
+        else:
+            return await message.reply_text(
+                "Wʀᴏɴɢ ғᴏʀᴍᴀᴛᴛɪɴɢ, ᴄʜᴇᴄᴋ ᴛʜᴇ ʜᴇʟᴘ sᴇᴄᴛɪᴏɴ.\n\n**Usᴀsɢᴇ:**\nTᴛᴇxᴛ: `Text`\nᴛᴇxᴛ + ʙᴜᴛᴛᴏɴs: `Text ~ Buttons`",
+                reply_markup=key,
+            )
+    except UnboundLocalError:
+        return await message.reply_text(
+            "**Oɴʟʏ Tᴇxᴛ, Gɪғ ᴀɴᴅ Pʜᴏᴛᴏ ᴡᴇʟᴄᴏᴍᴇ ᴍᴇssᴀɢᴇ ᴀʀᴇ sᴜᴘᴘᴏʀᴛᴇᴅ.**"
+        )
+
+
+@app.on_message(filters.command(["resetgoodbye"]) & ~filters.private)
+@adminsOnly("can_change_info")
+async def del_goodbye_func(_, message):
+    chat_id = message.chat.id
+
+    # Check if goodbye message is set
+    goodbye, raw_text, file_id = await get_goodbye(chat_id)
+
+    if not raw_text:
+        return await message.reply_text(
+            "What are you deleting‽ You haven't set-up the custom goodbye message yet."
+        )
+
+    # If goodbye message exists, proceed to delete it
+    await del_goodbye(chat_id)
+    await message.reply_text("Gᴏᴏᴅʙʏᴇ ᴍᴇssᴀɢᴇ ʜᴀs ʙᴇᴇɴ Dᴇʟᴇᴛᴇᴅ Sᴜᴄᴄᴇssғᴜʟʟʏ")
+
+
+@app.on_message(filters.command("goodbye") & ~filters.private)
+@adminsOnly("can_change_info")
+async def goodbye(client, message: Message):
+    command = message.text.split()
+
+    if len(command) == 1:
+        return await get_goodbye_func(client, message)
+
+    if len(command) == 2:
+        action = command[1].lower()
+        if action in ["on", "enable", "y", "yes", "true", "t"]:
+            success = await set_greetings_on(message.chat.id, "goodbye")
+            if success:
+                await message.reply_text(
+                    "I'ʟʟ ʙᴇ sᴀʏɪɴɢ ɢᴏᴏᴅʙʏᴇ ᴛᴏ ᴀɴʏ ʟᴇᴀᴠᴇʀs ғʀᴏᴍ ɴᴏᴡ ᴏɴ!"
+                )
+            else:
+                await message.reply_text("Fᴀɪʟᴇᴅ ᴛᴏ ᴇɴᴀʙʟᴇ ɢᴏᴏᴅʙʏᴇ ᴍᴇssᴀɢᴇs.")
+
+        elif action in ["off", "disable", "n", "no", "false", "f"]:
+            success = await set_greetings_off(message.chat.id, "goodbye")
+            if success:
+                await message.reply_text("I'ʟʟ sᴛᴀʏ ǫᴜɪᴇᴛ ᴡʜᴇɴ ᴘᴇᴏᴘʟᴇ ʟᴇᴀᴠᴇ.")
+            else:
+                await message.reply_text("Fᴀɪʟᴇᴅ ᴛᴏ ᴅɪsᴀʙʟᴇ ɢᴏᴏᴅʙʏᴇ ᴍᴇssᴀɢᴇs.")
+
+        else:
+            await message.reply_text(
+                "Iɴᴠᴀʟɪᴅ ᴄᴏᴍᴍᴀɴᴅ. Pʟᴇᴀsᴇ ᴜsᴇ:\n"
+                "/goodbye - Tᴏ ɢᴇᴛ ʏᴏᴜʀ ɢᴏᴏᴅʙʏᴇ ᴍᴇssᴀɢᴇ\n"
+                "/goodbye [on, y, true, enable, t] - ᴛᴏ ᴛᴜʀɴ ᴏɴ ɢᴏᴏᴅʙʏᴇ ᴍᴇssᴀɢᴇs\n"
+                "/goodbye [off, n, false, disable, f, no] - ᴛᴏ ᴛᴜʀɴ ᴏғғ ɢᴏᴏᴅʙʏᴇ ᴍᴇssᴀɢᴇs\n"
+                "/delgoodbye ᴏʀ /deletegoodbye ᴛᴏ ᴅᴇʟᴛᴇ ɢᴏᴏᴅʙʏᴇ ᴍᴇssᴀɢᴇ ᴀɴᴅ ᴛᴜʀɴ ᴏғғ ɢᴏᴏᴅʙʏᴇ"
+            )
+    else:
+        await message.reply_text(
+            "Iɴᴠᴀʟɪᴅ ᴄᴏᴍᴍᴀɴᴅ. Pʟᴇᴀsᴇ ᴜsᴇ:\n"
+            "/goodbye - Tᴏ ɢᴇᴛ ʏᴏᴜʀ ɢᴏᴏᴅʙʏᴇ ᴍᴇssᴀɢᴇ\n"
+            "/goodbye [on, y, true, enable, t] - ᴛᴏ ᴛᴜʀɴ ᴏɴ ɢᴏᴏᴅʙʏᴇ ᴍᴇssᴀɢᴇs\n"
+            "/goodbye [off, n, false, disable, f, no] - ᴛᴏ ᴛᴜʀɴ ᴏғғ ɢᴏᴏᴅʙʏᴇ ᴍᴇssᴀɢᴇs\n"
+            "/delgoodbye ᴏʀ /deletegoodbye ᴛᴏ ᴅᴇʟᴛᴇ ɢᴏᴏᴅʙʏᴇ ᴍᴇssᴀɢᴇ ᴀɴᴅ ᴛᴜʀɴ ᴏғғ ɢᴏᴏᴅʙʏᴇ"
+        )
+
+
+async def get_goodbye_func(_, message):
+    chat = message.chat
+    goodbye, raw_text, file_id = await get_goodbye(chat.id)
+    if not raw_text:
+        return await message.reply_text(
+            "Dɪᴅ Yᴏᴜ ʀᴇᴍᴇᴍʙᴇʀ ᴛʜᴀᴛ ʏᴏᴜ ʜᴀᴠᴇ sᴇᴛ's ᴀɴᴛ ɢᴏᴏᴅʙʏᴇ ᴍᴇssᴀɢᴇ"
+        )
+    if not message.from_user:
+        return await message.reply_text("Yᴏᴜ'ʀᴇ ᴀɴᴏɴ, ᴄᴀɴ'ᴛ sᴇɴᴅ ɢᴏᴏᴅʙʏᴇ ᴍᴇssᴀɢᴇ.")
+
+    await send_left_message(chat, message.from_user.id)
+    is_grt = await is_greetings_on(chat.id, "goodbye")
+    text = None
+    if is_grt:
+        text = "Tʀᴜᴇ"
+    else:
+        text = "Fᴀʟsᴇ"
+    await message.reply_text(
+        f'I ᴀᴍ ᴄᴜʀʀᴇɴᴛʟʏ sᴀʏɪɴɢ ɢᴏᴏᴅʙʏᴇ ᴛᴏ ᴜsᴇʀs :- {text}\nGᴏᴏᴅʙʏᴇ: {goodbye}\n\nғɪʟᴇ_ɪᴅ: `{file_id}`\n\n`{raw_text.replace("`", "")}`'
+    )
+
+
+# welcome 
+import datetime
+import random
+from re import findall
+
+from pyrogram import filters
+from pyrogram.enums import ChatMemberStatus as CMS
+from pyrogram.errors.exceptions.bad_request_400 import ChatAdminRequired
+from pyrogram.types import (
+    Chat,
+    ChatMemberUpdated,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+)
+
+from Alex import app
+from Alex.misc import SUDOERS
+from .notes import extract_urls
+from Alex.utils.database import is_gbanned_user
+
+from Alex.utils.welcomedb import (
     del_welcome,
-    get_captcha_cache,
     get_welcome,
-    has_solved_captcha_once,
-    is_captcha_on,
-    is_gbanned_user,
-    save_captcha_solved,
     set_welcome,
-    update_captcha_cache,
-)
-from utils.filter_groups import welcome_captcha_group
-from utils.functions import (
-    check_format,
-    extract_text_and_keyb,
-    generate_captcha,
 )
 
-answers_dicc = []
-loop = asyncio.get_running_loop()
+from Alex.utils.error import capture_err
+from Alex.utils.functions import check_format, extract_text_and_keyb
+from Alex.utils.keyboard import ikb
+from Alex.utils.permissions import adminsOnly
 
 
-async def get_initial_captcha_cache():
-    global answers_dicc
-    answers_dicc = await get_captcha_cache()
-    return answers_dicc
-
-
-loop.create_task(get_initial_captcha_cache())
+# Random welcome messages list
+RANDOM_WELCOME_MESSAGES = [
+    "Hi {mention}, welcome to the dark side.",
+    "Hola {mention}, beware of people with disaster levels",
+    "Hey {mention}, we have the droids you are looking for.",
+    "Hi {mention}\nThis isn't a strange place, this is my home, it's the people who are strange.",
+    "Oh, hey {mention} what's the password?",
+    "Hey {mention}, I know what we're gonna do today",
+    "{mention} just joined, be at alert they could be a spy.",
+    "{mention} joined the group, read by Mark Zuckerberg, CIA and 35 others.",
+    "Welcome {mention}, watch out for falling monkeys.",
+    "Everyone stop what you’re doing, We are now in the presence of {mention}.",
+    "Hey {mention}, do you wanna know how I got these scars?",
+    "Welcome {mention}, drop your weapons and proceed to the spy scanner.",
+    "Stay safe {mention}, Keep 3 meters social distances between your messages.",  # Corona memes lmao
+    "Hey {mention}, Do you know I once One-punched a meteorite?",
+    "You’re here now {mention}, Resistance is futile",
+    "{mention} just arrived, the force is strong with this one.",
+    "{mention} just joined on president’s orders.",
+    "Hi {mention}, is the glass half full or half empty?",
+    "Yipee Kayaye {mention} arrived.",
+    "Welcome {mention}, if you’re a secret agent press 1, otherwise start a conversation",
+    "{mention}, I have a feeling we’re not in Kansas anymore.",
+    "may take our lives, but they’ll never take our {mention}.",
+    "Coast is clear! You can come out guys, it’s just {mention}.",
+    "Welcome {mention}, pay no attention to that guy lurking.",
+    "Welcome {mention}, may the force be with you.",
+    "May the {mention} be with you.",
+    "{mention} just joined. Hey, where's Perry?",
+    "{mention} just joined. Oh, there you are, Perry.",
+    "Ladies and gentlemen, I give you ...  {mention}.",
+    "Behold my new evil scheme, the {mention}-Inator.",
+    "Ah, {mention} the Platypus, you're just in time... to be trapped.",
+    "{mention} just arrived. Diable Jamble!",  # One Piece Sanji
+    "{mention} just arrived. Aschente!",  # No Game No Life
+    "{mention} say Aschente to swear by the pledges.",  # No Game No Life
+    "{mention} just joined. El Psy congroo!",  # Steins Gate
+    "Irasshaimase {mention}!",  # weeabo shit
+    "Hi {mention}, what is 1000-7?",  # tokyo ghoul
+    "Come. I don't want to destroy this place",  # hunter x hunter
+    "I... am... Whitebeard!...wait..wrong anime.",  # one Piece
+    "Hey {mention}...have you ever heard these words?",  # BNHA
+    "Can't a guy get a little sleep around here?",  # Kamina Falls – Gurren Lagann
+    "It's time someone put you in your place, {mention}.",  # Hellsing
+    "Unit-01's reactivated..",  # Neon Genesis: Evangelion
+    "Prepare for trouble...And make it double",  # Pokemon
+    "Hey {mention}, are You Challenging Me?",  # Shaggy
+    "Oh? You're Approaching Me?",  # jojo
+    "Ho… mukatta kuruno ka?",  # jojo jap ver
+    "I can't beat the shit out of you without getting closer",  # jojo
+    "Ho ho! Then come as close as you'd like.",  # jojo
+    "Hoho! Dewa juubun chikazukanai youi",  # jojo jap ver
+    "Guess who survived his time in Hell, {mention}.",  # jojo
+    "How many loaves of bread have you eaten in your lifetime?",  # jojo
+    "What did you say? Depending on your answer, I may have to kick your ass!",  # jojo
+    "Oh? You're approaching me? Instead of running away, you come right to me? Even though your grandfather, Joseph, told you the secret of The World, like an exam student scrambling to finish the problems on an exam until the last moments before the chime?",  # jojo
+    "Rerorerorerorerorero.",  # jojo
+    "{mention} just warped into the group!",
+    "I..it's..it's just {mention}.",
+    "Sugoi, Dekai. {mention} Joined!",
+    "{mention}, do you know gods of death love apples?",  # Death Note owo
+    "I'll take a potato chip.... and eat it",  # Death Note owo
+]
 
 
 async def handle_new_member(member, chat):
-    global answers_dicc
-
-    # Get cached answers from mongodb in case of bot's been restarted or crashed.
-    answers_dicc = await get_captcha_cache()
-
-    # Mute new member and send message with button
     try:
         if member.id in SUDOERS:
-            return  # Ignore sudo users
+            return
         if await is_gbanned_user(member.id):
             await chat.ban_member(member.id)
             await app.send_message(
@@ -81,99 +442,19 @@ async def handle_new_member(member, chat):
             )
             return
         if member.is_bot:
-            return  # Ignore bots
-        if not await is_captcha_on(chat.id):
-            return await send_welcome_message(
-                chat, member.id
-            )
-
-        # Ignore user if he has already solved captcha in this group
-        # someday
-        if await has_solved_captcha_once(chat.id, member.id):
             return
+        return await send_welcome_message(chat, member.id)
 
-        await chat.restrict_member(member.id, ChatPermissions())
-        text = (
-            f"{(member.mention())} Are you human?\n"
-            f"Solve this captcha in {WELCOME_DELAY_KICK_SEC} "
-            "seconds and 4 attempts or you'll be kicked."
-        )
     except ChatAdminRequired:
         return
 
-    # Generate a captcha image, answers, and some wrong answers
-    captcha = generate_captcha()
-    captcha_image = captcha[0]
-    captcha_answer = captcha[1]
-    wrong_answers = captcha[2]  # This consists of 8 wrong answers
-    correct_button = InlineKeyboardButton(
-        f"{captcha_answer}",
-        callback_data=f"pressed_button {captcha_answer} {member.id}",
-    )
-    temp_keyboard_1 = [correct_button]  # Button row 1
-    temp_keyboard_2 = []  # Botton row 2
-    temp_keyboard_3 = []
-    for i in range(2):
-        temp_keyboard_1.append(
-            InlineKeyboardButton(
-                f"{wrong_answers[i]}",
-                callback_data=f"pressed_button {wrong_answers[i]} {member.id}",
-            )
-        )
-    for i in range(2, 5):
-        temp_keyboard_2.append(
-            InlineKeyboardButton(
-                f"{wrong_answers[i]}",
-                callback_data=f"pressed_button {wrong_answers[i]} {member.id}",
-            )
-        )
-    for i in range(5, 8):
-        temp_keyboard_3.append(
-            InlineKeyboardButton(
-                f"{wrong_answers[i]}",
-                callback_data=f"pressed_button {wrong_answers[i]} {member.id}",
-            )
-        )
 
-    shuffle(temp_keyboard_1)
-    keyboard = [temp_keyboard_1, temp_keyboard_2, temp_keyboard_3]
-    shuffle(keyboard)
-    verification_data = {
-        "chat_id": chat.id,
-        "user_id": member.id,
-        "answer": captcha_answer,
-        "keyboard": keyboard,
-        "attempts": 0,
-    }
-    keyboard = InlineKeyboardMarkup(keyboard)
-    # Append user info, correct answer, and
-    answers_dicc.append(verification_data)
-    # keyboard for later use with callback query
-    button_message = await app.send_photo(
-        chat_id=chat.id,
-        photo=captcha_image,
-        caption=text,
-        reply_markup=keyboard,
-    )
-    os.remove(captcha_image)
-
-    # Save captcha answers etc in mongodb in case the bot gets crashed or restarted.
-    await update_captcha_cache(answers_dicc)
-
-    asyncio.create_task(
-        kick_restricted_after_delay(300, button_message, member
-        )
-    )
-    await asyncio.sleep(0.5)
-
-
-
-@app.on_chat_member_updated(filters.group, group=welcome_captcha_group)
+@app.on_chat_member_updated(filters.group, group=6)
 @capture_err
 async def welcome(_, user: ChatMemberUpdated):
     if not (
         user.new_chat_member
-        and user.new_chat_member.status not in {CMS.RESTRICTED, CMS.BANNED}
+        and user.new_chat_member.status not in {CMS.RESTRICTED}
         and not user.old_chat_member
     ):
         return
@@ -184,189 +465,72 @@ async def welcome(_, user: ChatMemberUpdated):
 
 
 async def send_welcome_message(chat: Chat, user_id: int, delete: bool = False):
+    # Get welcome message from database
     welcome, raw_text, file_id = await get_welcome(chat.id)
 
-    if not raw_text:
-        return
+    # Get user details
+    u = await app.get_users(user_id)
+
+    # If no custom welcome message is set, choose a random message
+    if not raw_text:  # raw_text is empty or None
+        raw_text = random.choice(RANDOM_WELCOME_MESSAGES)
+
+    # Placeholder replacements
     text = raw_text
     keyb = None
-    if findall(r"\[.+\,.+\]", raw_text):
+    if findall(r".+\,.+", raw_text):
         text, keyb = extract_text_and_keyb(ikb, raw_text)
 
-    if "{chat}" in text:
-        text = text.replace("{chat}", chat.title)
-    if "{name}" in text:
-        text = text.replace("{name}", (await app.get_users(user_id)).mention)
+    # Replace placeholders with actual values
+    if "{chatname}" in text:
+        text = text.replace("{chatname}", chat.title)
+    if "{mention}" in text:
+        text = text.replace("{mention}", u.mention)
     if "{id}" in text:
         text = text.replace("{id}", f"`{user_id}`")
+    if "{first}" in text:
+        text = text.replace("{first}", u.first_name)
+    if "{last}" in text:
+        sname = u.last_name or "None"
+        text = text.replace("{last}", sname)
+    if "{username}" in text:
+        susername = u.username or "None"
+        text = text.replace("{username}", susername)
+    if "{date}" in text:
+        DATE = datetime.datetime.now().strftime("%Y-%m-%d")
+        text = text.replace("{date}", DATE)
+    if "{weekday}" in text:
+        WEEKDAY = datetime.datetime.now().strftime("%A")
+        text = text.replace("{weekday}", WEEKDAY)
+    if "{time}" in text:
+        TIME = datetime.datetime.now().strftime("%H:%M:%S")
+        text = text.replace("{time}", f"{time} UTC")
 
-    async def _send_wait_delete():
-        if welcome == "Text":
-            m = await app.send_message(
-                chat.id,
-                text=text,
-                reply_markup=keyb,
-                disable_web_page_preview=True,
-            )
-        elif welcome == "Photo":
-            m = await app.send_photo(
-                chat.id,
-                photo=file_id,
-                caption=text,
-                reply_markup=keyb,
-            )
-        else:
-            m = await app.send_animation(
-                chat.id,
-                animation=file_id,
-                caption=text,
-                reply_markup=keyb,
-            )
-        await asyncio.sleep(300)
-        await m.delete()
-
-    asyncio.create_task(_send_wait_delete())
-
-
-@app.on_callback_query(filters.regex("pressed_button"))
-async def callback_query_welcome_button(_, callback_query):
-    """After the new member presses the correct button,
-    set his permissions to chat permissions,
-    delete button message and join message.
-    """
-    global answers_dicc
-    data = callback_query.data
-    pressed_user_id = callback_query.from_user.id
-    pending_user_id = int(data.split(None, 2)[2])
-    button_message = callback_query.message
-    answer = data.split(None, 2)[1]
-
-    correct_answer = None
-    keyboard = None
-
-    if len(answers_dicc) != 0:
-        for i in answers_dicc:
-            if (
-                i["user_id"] == pending_user_id
-                and i["chat_id"] == button_message.chat.id
-            ):
-                correct_answer = i["answer"]
-                keyboard = i["keyboard"]
-
-    if not (correct_answer and keyboard):
-        return await callback_query.answer(
-            "Something went wrong, Rejoin the " "chat!"
+    # Send welcome message based on type (Text, Photo, Animation)
+    if not welcome or welcome == "Text":  # Default to text if no custom welcome is set
+        m = await app.send_message(
+            chat.id,
+            text=text,
+            reply_markup=keyb,
+            disable_web_page_preview=True,
         )
-
-    if pending_user_id != pressed_user_id:
-        return await callback_query.answer("This is not for you")
-
-    if answer != correct_answer:
-        await callback_query.answer("Yeah, It's Wrong.")
-        for iii in answers_dicc:
-            if (
-                iii["user_id"] == pending_user_id
-                and iii["chat_id"] == button_message.chat.id
-            ):
-                attempts = iii["attempts"]
-                if attempts >= 3:
-                    answers_dicc.remove(iii)
-                    await button_message.chat.ban_member(pending_user_id)
-                    await asyncio.sleep(1)
-                    await button_message.chat.unban_member(pending_user_id)
-                    await button_message.delete()
-                    return await update_captcha_cache(answers_dicc)
-
-                iii["attempts"] += 1
-                break
-
-        shuffle(keyboard[0])
-        shuffle(keyboard[1])
-        shuffle(keyboard[2])
-        shuffle(keyboard)
-        keyboard = InlineKeyboardMarkup(keyboard)
-        return await button_message.edit(
-            text=button_message.caption.markdown,
-            reply_markup=keyboard,
+    elif welcome == "Photo":
+        m = await app.send_photo(
+            chat.id,
+            photo=file_id,
+            caption=text,
+            reply_markup=keyb,
         )
-
-    await callback_query.answer("Captcha passed successfully!")
-    await button_message.chat.unban_member(pending_user_id)
-    await button_message.delete()
-
-    if len(answers_dicc) != 0:
-        for ii in answers_dicc:
-            if (
-                ii["user_id"] == pending_user_id
-                and ii["chat_id"] == button_message.chat.id
-            ):
-                answers_dicc.remove(ii)
-                await update_captcha_cache(answers_dicc)
-
-    chat = callback_query.message.chat
-
-    # Save this verification in db, so we don't have to
-    # send captcha to this user when he joins again.
-    await save_captcha_solved(chat.id, pending_user_id)
-
-    return await send_welcome_message(chat, pending_user_id, True)
-
-
-async def kick_restricted_after_delay(
-    delay, button_message: Message, user: User
-):
-    """If the new member is still restricted after the delay, delete
-    button message and join message and then kick him
-    """
-    global answers_dicc
-    await asyncio.sleep(delay)
-    group_chat = button_message.chat
-    user_id = user.id
-    await button_message.delete()
-    if len(answers_dicc) != 0:
-        for i in answers_dicc:
-            if i["user_id"] == user_id:
-                answers_dicc.remove(i)
-                await update_captcha_cache(answers_dicc)
-    await _ban_restricted_user_until_date(group_chat, user_id, duration=delay)
-
-
-async def _ban_restricted_user_until_date(
-    group_chat, user_id: int, duration: int
-):
-    try:
-        member = await group_chat.get_member(user_id)
-        if member.status == ChatMemberStatus.RESTRICTED:
-            until_date = (datetime.now() + timedelta(seconds=duration))
-            await group_chat.ban_member(user_id, until_date=until_date)
-    except UserNotParticipant:
-        pass
-
-
-@app.on_message(filters.command("captcha") & ~filters.private)
-@adminsOnly("can_restrict_members")
-async def captcha_state(_, message):
-    usage = "**Usage:**\n/captcha [ENABLE|DISABLE]"
-    if len(message.command) != 2:
-        return await message.reply_text(usage)
-
-    chat_id = message.chat.id
-    state = message.text.split(None, 1)[1].strip()
-    state = state.lower()
-    if state == "enable":
-        await captcha_on(chat_id)
-        await message.reply_text("Enabled Captcha For New Users.")
-    elif state == "disable":
-        await captcha_off(chat_id)
-        await message.reply_text("Disabled Captcha For New Users.")
     else:
-        await message.reply_text(usage)
+        m = await app.send_animation(
+            chat.id,
+            animation=file_id,
+            caption=text,
+            reply_markup=keyb,
+        )
 
 
-# WELCOME MESSAGE
-
-
-@app.on_message(filters.command("set_welcome") & ~filters.private)
+@app.on_message(filters.command("setwelcome") & ~filters.private)
 @adminsOnly("can_change_info")
 async def set_welcome_func(_, message):
     usage = "You need to reply to a text, gif or photo to set it as greetings.\n\nNotes: caption required for gif and photo."
@@ -375,7 +539,7 @@ async def set_welcome_func(_, message):
             [
                 InlineKeyboardButton(
                     text="More Help",
-                    url=f"t.me/{BOT_USERNAME}?start=help_greetings",
+                    url=f"t.me/{app.username}?start=greetings",
                 )
             ],
         ]
@@ -405,7 +569,7 @@ async def set_welcome_func(_, message):
             file_id = None
             text = replied_message.text
             raw_text = text.markdown
-        if replied_message.reply_markup and not findall(r"\[.+\,.+\]", raw_text):
+        if replied_message.reply_markup and not findall(r".+\,.+", raw_text):
             urls = extract_urls(replied_message.reply_markup)
             if urls:
                 response = "\n".join(
@@ -429,15 +593,23 @@ async def set_welcome_func(_, message):
         )
 
 
-@app.on_message(filters.command("del_welcome") & ~filters.private)
+@app.on_message(filters.command(["resetwelcome"]) & ~filters.private)
 @adminsOnly("can_change_info")
 async def del_welcome_func(_, message):
     chat_id = message.chat.id
+
+    # Check if a custom welcome message is set
+    welcome, raw_text, file_id = await get_welcome(chat_id)
+
+    if not raw_text:  # Agar customize welcome message set nahi hai
+        return await message.reply_text("What are you deleting‽ You haven't set up the custom welcome yet.")
+
+    # Agar customize welcome message set hai, toh delete karenge
     await del_welcome(chat_id)
     await message.reply_text("Welcome message has been deleted.")
 
 
-@app.on_message(filters.command("get_welcome") & ~filters.private)
+@app.on_message(filters.command("welcome") & ~filters.private)
 @adminsOnly("can_change_info")
 async def get_welcome_func(_, message):
     chat = message.chat
@@ -445,9 +617,7 @@ async def get_welcome_func(_, message):
     if not raw_text:
         return await message.reply_text("No welcome message set.")
     if not message.from_user:
-        return await message.reply_text(
-            "You're anon, can't send welcome message."
-        )
+        return await message.reply_text("You're anon, can't send welcome message.")
 
     await send_welcome_message(chat, message.from_user.id)
 
