@@ -49,38 +49,6 @@ from utils.functions import (
     generate_captcha,
 )
 
-__MODULE__ = "Greetings"
-__HELP__ = """
-/captcha [ENABLE|DISABLE] - Enable/Disable captcha.
-
-/set_welcome - Reply this to a message containing correct
-format for a welcome message, check end of this message.
-
-/del_welcome - Delete the welcome message.
-/get_welcome - Get the welcome message.
-
-**SET_WELCOME ->**
-
-**To set a photo or gif as welcome message. Add your welcome message as caption to the photo or gif. The caption muse be in the format given below.**
-
-For text welcome message just send the text. Then reply with the command 
-
-The format should be something like below.
-
-```
-**Hi** {name} [{id}] Welcome to {chat}
-
-~ #This separater (~) should be there between text and buttons, remove this comment also
-
-button=[Duck, https://duckduckgo.com]
-button2=[Github, https://github.com]
-```
-
-**NOTES ->**
-
-Checkout /markdownhelp to know more about formattings and other syntax.
-"""
-
 answers_dicc = []
 loop = asyncio.get_running_loop()
 
