@@ -1,6 +1,7 @@
 import os
 import re
 
+import requests
 import yt_dlp
 from pykeyboard import InlineKeyboard
 from pyrogram import filters
@@ -9,7 +10,7 @@ from pyrogram.types import (InlineKeyboardButton,
                             InlineKeyboardMarkup, InputMediaVideo,
                             Message)
 
-from config import BANNED_USERS, SONG_DOWNLOAD_DURATION_LIMIT
+from config import BANNED_USERS, SONG_DOWNLOAD_DURATION_LIMIT, LOGGER_ID
 from Alex import YouTube, app
 from Alex.utils.decorators.language import language, languageCB
 from Alex.utils.inline.song import song_markup
@@ -269,3 +270,49 @@ async def handle_song(client, message):
     # Send audio and clean up
     await message.reply_audio(audio=open(filename, "rb"), caption=caption)
     os.remove(filename)
+
+
+
+@app.on_message(filters.command(["insta", "ig", "instagram", "reel"], prefixes=["!", "/", "."]))
+async def download_instagram_video(client, message):
+    if len(message.command) < 2:
+        await message.reply_text(
+            "<b>ᴘᴇᴀsᴇ ᴘʀᴏᴠɪᴅᴇ ᴍᴇ ᴛʜᴇ ɪɴsᴛᴀɢʀᴀᴍ ᴜʀʟ</b>"
+        )
+        return
+    url = message.text.split()[1]
+    if not re.match(
+        re.compile(r"^(https?://)?(www\.)?(instagram\.com|instagr\.am)/.*$"), url
+    ):
+        return await message.reply_text(
+            "ᴛʜᴇ <b>ɪɴsᴛᴀɢʀᴀᴍ ᴜʀʟ</b> ʏᴏᴜ ʜᴀᴠᴇ ᴘʀᴏᴠɪᴅᴇᴅ  ɪsɴ'ᴛ ᴍᴀᴛᴄʜɪɴɢ ᴛʜᴇ <b>ɪɴsᴛᴀɢʀᴀᴍ ᴜʀʟ</b>"
+        )
+    a = await message.reply_text("<b>ᴘʀᴏᴄᴇssɪɴɢ . . .</b>")
+    api_url = f"https://insta-dl.hazex.workers.dev/?url={url}"
+
+    response = requests.get(api_url)
+    try:
+        result = response.json()
+        data = result["result"]
+    except Exception as e:
+        f = f"<b>ᴇʀʀᴏʀ :</b>\n{e}"
+        try:
+            await a.edit(f)
+        except Exception:
+            await message.reply_text(f)
+            return await app.send_message(LOGGER_ID, f)
+        return await app.send_message(LOGGER_ID, f)
+    if not result["error"]:
+        video_url = data["url"]
+        duration = data["duration"]
+        quality = data["quality"]
+        type = data["extension"]
+        size = data["formattedSize"]
+        caption = f"Dᴜʀᴀᴛɪᴏɴ : {duration}\nQᴜᴀʟɪᴛʏ : {quality}\nTʏᴘᴇ : {type}\nSɪᴢᴇ : {size}"
+        await a.delete()
+        await message.reply_video(video_url, caption=caption)
+    else:
+        try:
+            return await a.edit("ᴅᴏᴡɴʟᴏᴀᴅ ғᴀɪʟᴇᴅ")
+        except Exception:
+            return await message.reply_text("ᴅᴏᴡɴʟᴏᴀᴅ ғᴀɪʟᴇᴅ")
