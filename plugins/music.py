@@ -308,7 +308,7 @@ async def download_instagram_video(client, message):
         quality = data["quality"]
         type = data["extension"]
         size = data["formattedSize"]
-        caption = f"Dᴜʀᴀᴛɪᴏɴ : {duration}\nQᴜᴀʟɪᴛʏ : {quality}\nTʏᴘᴇ : {type}\nSɪᴢᴇ : {size}"
+        caption = f"<b>ᴅᴜʀᴀᴛɪᴏɴ :</> {duration}\n<b>ǫᴜᴀʟɪᴛʏ :</b> {quality}\n<b>ᴛʏᴘᴇ :</b> {type}\n<b>sɪᴢᴇ :</b> {size}"
         await a.delete()
         await message.reply_video(video_url, caption=caption)
     else:
