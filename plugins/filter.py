@@ -146,4 +146,4 @@ async def stop(client, message):
         return
 
     await stop_db(chat_id, filter_name)
-    await message.reply(f"ɪ'ᴠᴇ sᴛᴏᴘᴘᴇᴅ <code>{filter_name}</code>.")
+    await message.reply(f"ғɪʟᴛᴇʀ '<code>{filter_name}</code>' ʜᴀs ʙᴇᴇɴ sᴛᴏᴘᴘᴇᴅ!")
