@@ -266,7 +266,7 @@ async def handle_song(client, message):
                 file.write(chunk)
 
     # Caption removed
-    caption = ""
+    caption = f"<i>Obtain by {app.mention}</i>"
 
     # Send audio and clean up
     await message.reply_audio(audio=open(filename, "rb"), caption=caption)
