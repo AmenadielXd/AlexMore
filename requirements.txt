@@ -6,3 +6,4 @@ pycountry
 pyfiglet
 pytz
 telegraph
+nekos.py
