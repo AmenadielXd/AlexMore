@@ -70,27 +70,27 @@ async def sticker_image(_, message: Message):
 @capture_err
 async def kang(client, message: Message):
     if not message.reply_to_message:
-        return await message.reply_text("ʀᴇᴘʟʏ ᴛᴏ ᴀ sᴛɪᴄᴋᴇʀ ᴏʀ ɪᴍᴀɢᴇ ᴛᴏ ᴋᴀɴɢ ɪᴛ.")
+        return await message.reply_text("ʀᴇᴘʟʏ ᴛᴏ ᴀ sᴛɪᴄᴋᴇʀ, ɪᴍᴀɢᴇ, ɢɪғ, ᴏʀ ᴠɪᴅᴇᴏ ᴛᴏ ᴋᴀɴɢ ɪᴛ.")
     if not message.from_user:
         return await message.reply_text(
             "ɴᴏᴜ ᴀʀᴇ ᴀɴᴏɴ ᴀᴅᴍɪɴ, ᴋᴀɴɢ sᴛɪᴄᴋᴇʀs ɪɴ ᴍʏ ᴘᴍ."
         )
     msg = await message.reply_text("<b>ᴋᴀɴɢɪɴɢ sᴛɪᴄᴋᴇʀ . . .</b>")
 
-    # Find the proper emoji
     args = message.text.split()
     if len(args) > 1:
         sticker_emoji = str(args[1])
-    elif (
-        message.reply_to_message.sticker
-        and message.reply_to_message.sticker.emoji
-    ):
+    elif message.reply_to_message.sticker and message.reply_to_message.sticker.emoji:
         sticker_emoji = message.reply_to_message.sticker.emoji
     else:
         sticker_emoji = "🙂"
 
-    # Get the corresponding fileid, resize the file if necessary
-    doc = message.reply_to_message.photo or message.reply_to_message.document
+    doc = (
+        message.reply_to_message.photo
+        or message.reply_to_message.document
+        or message.reply_to_message.animation
+        or message.reply_to_message.video
+    )
     try:
         if message.reply_to_message.sticker:
             sticker = await create_sticker(
@@ -104,43 +104,55 @@ async def kang(client, message: Message):
                 return await msg.edit("ғɪʟᴇ sɪᴢᴇ ᴛᴏᴏ ʟᴀʀɢᴇ.")
 
             temp_file_path = await app.download_media(doc)
-            image_type = imghdr.what(temp_file_path)
-            if image_type not in SUPPORTED_TYPES:
-                return await msg.edit(
-                    "ғᴏʀᴍᴀᴛ ɴᴏᴛ sᴜᴘᴘᴏʀᴛᴇᴅ! ({})".format(image_type)
+            if message.reply_to_message.animation or message.reply_to_message.video:
+                try:
+                    # Convert video/GIF to WebM
+                    webm_file_path = temp_file_path.replace(temp_file_path.split('.')[-1], "webm")
+                    command = f"ffmpeg -i {temp_file_path} -c:v libvpx-vp9 -b:v 1M -an {webm_file_path}"
+                    process = await asyncio.create_subprocess_shell(command)
+                    await process.communicate()
+
+                    if os.path.isfile(webm_file_path):
+                        sticker = await create_sticker(
+                            await upload_document(client, webm_file_path, message.chat.id),
+                            sticker_emoji,
+                        )
+                        os.remove(webm_file_path)
+                    else:
+                        return await msg.edit("Failed to convert GIF/Video to WebM.")
+                except Exception as e:
+                    await msg.edit(f"Error: {str(e)}")
+                    return
+            else:
+                image_type = imghdr.what(temp_file_path)
+                if image_type not in SUPPORTED_TYPES:
+                    return await msg.edit(
+                        "ғᴏʀᴍᴀᴛ ɴᴏᴛ sᴜᴘᴘᴏʀᴛᴇᴅ! ({})".format(image_type)
+                    )
+                try:
+                    temp_file_path = await resize_file_to_sticker_size(temp_file_path)
+                except OSError as e:
+                    await msg.edit_text("Something went wrong while resizing the image.")
+                    raise Exception(
+                        f"Error resizing the sticker (at {temp_file_path}): {e}"
+                    )
+                sticker = await create_sticker(
+                    await upload_document(client, temp_file_path, message.chat.id),
+                    sticker_emoji,
                 )
-            try:
-                temp_file_path = await resize_file_to_sticker_size(
-                    temp_file_path
-                )
-            except OSError as e:
-                await msg.edit_text("Something wrong happened.")
-                raise Exception(
-                    f"Something went wrong while resizing the sticker (at {temp_file_path}); {e}"
-                )
-            sticker = await create_sticker(
-                await upload_document(client, temp_file_path, message.chat.id),
-                sticker_emoji,
-            )
-            if os.path.isfile(temp_file_path):
-                os.remove(temp_file_path)
+                if os.path.isfile(temp_file_path):
+                    os.remove(temp_file_path)
         else:
             return await msg.edit("Nope, can't kang that.")
-    except ShortnameOccupyFailed:
-        await message.reply_text("Change Your Name Or Username")
-        return
-
     except Exception as e:
         await message.reply_text(str(e))
-        e = format_exc()
-        return print(e)
-#-------
+        return
+
     packnum = 0
     packname = "f" + str(message.from_user.id) + "_by_" + BOT_USERNAME
     limit = 0
     try:
         while True:
-            # Prevent infinite rules
             if limit >= 50:
                 return await msg.delete()
 
@@ -174,9 +186,12 @@ async def kang(client, message: Message):
             break
 
         await msg.edit(
-    f"<b>sᴛɪᴄᴋᴇʀ ᴀᴅᴅᴇᴅ ᴛᴏ <a href='t.me/addstickers/{packname}'>ᴘᴀᴄᴋ</a></b>\n"
-    f"<b>ᴇᴍᴏJɪ</b>: {sticker_emoji}"
-)
+            f"<b>sᴛɪᴄᴋᴇʀ ᴀᴅᴅᴇᴅ ᴛᴏ <a href='t.me/addstickers/{packname}'>ᴘᴀᴄᴋ</a></b>\n"
+            f"<b>ᴇᴍᴏᴊɪ</b>: {sticker_emoji}"
+        )
+    except Exception as e:
+        await msg.edit(f"Error: {str(e)}")
+
     except (PeerIdInvalid, UserIsBlocked):
         keyboard = InlineKeyboardMarkup(
             [[InlineKeyboardButton(text="Start", url=f"t.me/{BOT_USERNAME}")]]
