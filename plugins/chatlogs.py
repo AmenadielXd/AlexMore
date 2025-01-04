@@ -5,7 +5,7 @@ from pyrogram.errors import ChatAdminRequired
 from Alex import app
 from Alex.utils.database import add_served_chat, get_assistant
 
-LOG_GROUP_ID = -1002212693208
+LOG_GROUP_ID = -1002391400238
 
 @app.on_message(filters.new_chat_members, group=-10)
 async def join_watcher(_, message):
